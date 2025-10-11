@@ -1,0 +1,3 @@
+[submodule "libs/ctk"]
+	path = libs/ctk
+	url = https://github.com/Niels862/ctk
