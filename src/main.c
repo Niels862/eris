@@ -1,12 +1,32 @@
-#include "ctk/string-span.h"
+#include "ctk/text-source.h"
 #include <stdio.h>
 
-int main() {
-    ctk_strspan_t span;
-    ctk_strspan_init_from_string(&span, "hi :)");
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
+        return 1;
+    }
+    
+    int res = 1;
 
-    ctk_strspan_write_repr(&span, stdout);
-    printf("\n");
+    ctk_zstr_t filename = argv[1];
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Could not open file: `%s`\n", filename);
+        goto done;
+    }
 
-    return 0;
+    ctk_textsrc_t ts;
+    ctk_textsrc_init_file(&ts, filename, file);
+
+    ctk_textsrc_write(&ts, stdout);
+
+    ctk_textsrc_destruct(&ts);
+
+    fclose(file);
+
+    res = 0;
+
+done:
+    return res;
 }
