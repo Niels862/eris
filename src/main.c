@@ -1,7 +1,15 @@
+#include "lexer.h"
+#include "token.h"
 #include "ctk/text-source.h"
 #include <stdio.h>
 
+void eris_init(void) {
+    ctk_tokenkind_set_name_table(eris_token_names);
+}
+
 int main(int argc, char *argv[]) {
+    eris_init();
+
     if (argc != 2) {
         fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
         return 1;
@@ -19,8 +27,19 @@ int main(int argc, char *argv[]) {
     ctk_textsrc_t ts;
     ctk_textsrc_init_file(&ts, filename, file);
 
-    ctk_textsrc_write(&ts, stdout);
+    ctk_tokenlist_t toks;
+    ctk_tokenlist_init(&toks);
 
+    eris_lex(&ts, &toks);
+    ctk_tokenlist_lock(&toks);
+
+    for (size_t i = 0; i < toks.size; i++) {
+        ctk_token_write(&toks.data[i], stdout);
+        printf("\n");
+    }
+
+    printf("lexed %ld tokens.\n", toks.size);
+    
     ctk_textsrc_destruct(&ts);
 
     fclose(file);
