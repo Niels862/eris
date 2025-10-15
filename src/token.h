@@ -1,6 +1,7 @@
 #ifndef ERIS_TOKENKIND_H
 #define ERIS_TOKENKIND_H
 
+#include "ctk/token.h"
 #include "ctk/string-utils.h"
 
 /* X(name, string) 

@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "token.h"
+#include "ast.h"
 #include "ctk/text-source.h"
 #include <stdio.h>
 
@@ -43,6 +44,12 @@ int main(int argc, char *argv[]) {
     ctk_textsrc_destruct(&ts);
 
     fclose(file);
+
+    eris_node_stmt_t *node = eris_node_return_new(NULL, eris_node_intlit_new(NULL, 42));
+
+    ctk_rtti_write(node, 0, stdout);
+
+    ctk_rtti_delete(node);
 
     res = 0;
 
