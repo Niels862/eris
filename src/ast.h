@@ -3,6 +3,7 @@
 
 #include "token.h"
 #include "ctk/rtti.h"
+#include "ctk/list.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -12,6 +13,7 @@
         X(node_expr) \
         X(node_type) \
         X(node_decl) \
+        X(node_source) \
         X(node_function_decl) \
         X(node_return) \
         X(node_intlit)
@@ -37,11 +39,16 @@ typedef struct {
 
 typedef struct {
     eris_node_stmt_t stmt;
+    ctk_token_t *name;
 } eris_node_decl_t;
 
 typedef struct {
+    eris_node_t node;
+    eris_node_decl_t **decls;
+} eris_node_source_t;
+
+typedef struct {
     eris_node_decl_t decl;
-    ctk_token_t *name;
 } eris_node_function_decl_t;
 
 typedef struct {
@@ -55,6 +62,8 @@ typedef struct {
     ctk_token_t *token;
     int64_t value;
 } eris_node_intlit_t;
+
+eris_node_source_t *stem_node_source_new(ctk_list_t *decls);
 
 eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name);
 

@@ -172,4 +172,6 @@ void eris_lex(ctk_textsrc_t *ts, ctk_tokenlist_t *toks) {
     } while (!ctk_lexer_at_eof(&lexer));
 
     eris_emit(&lexer, toks, ERIS_TOKEN_EOF);
+
+    ctk_tokenlist_lock(toks);
 }

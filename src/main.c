@@ -1,3 +1,5 @@
+#include "source.h"
+#include "search.h"
 #include "lexer.h"
 #include "token.h"
 #include "ast.h"
@@ -25,31 +27,15 @@ int main(int argc, char *argv[]) {
         goto done;
     }
 
-    ctk_textsrc_t ts;
-    ctk_textsrc_init_file(&ts, filename, file);
-
-    ctk_tokenlist_t toks;
-    ctk_tokenlist_init(&toks);
-
-    eris_lex(&ts, &toks);
-    ctk_tokenlist_lock(&toks);
-
-    for (size_t i = 0; i < toks.size; i++) {
-        ctk_token_write(&toks.data[i], stdout);
-        printf("\n");
-    }
-
-    printf("lexed %ld tokens.\n", toks.size);
-    
-    ctk_textsrc_destruct(&ts);
+    eris_src_t src;
+    eris_src_init(&src, filename, file);
 
     fclose(file);
 
-    eris_node_stmt_t *node = eris_node_return_new(NULL, eris_node_intlit_new(NULL, 42));
+    eris_src_lex(&src);
+    eris_src_parse_file(&src);
 
-    ctk_rtti_write(node, 0, stdout);
-
-    ctk_rtti_delete(node);
+    eris_src_destruct(&src);
 
     res = 0;
 
