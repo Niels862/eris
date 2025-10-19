@@ -9,14 +9,14 @@ typedef struct {
     ctk_textsrc_t textsrc;
     ctk_tokenlist_t toks;
     eris_node_source_t *root;
-} eris_src_t;
+} eris_codesrc_t;
 
-void eris_src_init(eris_src_t *src, ctk_zstr_t filename, FILE *file);
+void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file);
 
-void eris_src_destruct(eris_src_t *src);
+void eris_codesrc_destruct(eris_codesrc_t *csrc);
 
-void eris_src_lex(eris_src_t *src);
+void eris_codesrc_lex(eris_codesrc_t *csrc);
 
-void eris_src_parse_file(eris_src_t *src);
+void eris_codesrc_parse_file(eris_codesrc_t *csrc);
 
 #endif

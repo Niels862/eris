@@ -15,6 +15,7 @@
         X(node_decl) \
         X(node_source) \
         X(node_function_decl) \
+        X(node_expr_stmt) \
         X(node_return) \
         X(node_intlit)
 
@@ -44,12 +45,18 @@ typedef struct {
 
 typedef struct {
     eris_node_t node;
-    eris_node_decl_t **decls;
+    eris_node_stmt_t **stmts;
 } eris_node_source_t;
 
 typedef struct {
     eris_node_decl_t decl;
+    eris_node_stmt_t **stmts;
 } eris_node_function_decl_t;
+
+typedef struct {
+    eris_node_stmt_t stmt;
+    eris_node_expr_t *expr;
+} eris_node_expr_stmt_t;
 
 typedef struct {
     eris_node_stmt_t stmt;
@@ -63,9 +70,12 @@ typedef struct {
     int64_t value;
 } eris_node_intlit_t;
 
-eris_node_source_t *stem_node_source_new(ctk_list_t *decls);
+eris_node_source_t *eris_node_source_new(ctk_list_t *decls);
 
-eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name);
+eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name, 
+                                              eris_node_stmt_t **stmts);
+
+eris_node_stmt_t *eris_node_expr_stmt_new(eris_node_expr_t *expr);
 
 eris_node_stmt_t *eris_node_return_new(ctk_token_t *token, 
                                        eris_node_expr_t *value);

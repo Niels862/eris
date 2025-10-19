@@ -5,17 +5,17 @@
 #include <assert.h>
 
 static ctk_fixed_lexeme_t eris_keywords[] = {
-    ERIS_TOKENS_KEYWORD(ERIS_X_EXPAND_FIXED),
+    ERIS_TOKENS_KEYWORD(ERIS_X_EXPAND_FIXED)
     { 0 }
 };
 
 static ctk_fixed_lexeme_t eris_separators[] = {
-    ERIS_TOKENS_SEPARATOR(ERIS_X_EXPAND_FIXED),
+    ERIS_TOKENS_SEPARATOR(ERIS_X_EXPAND_FIXED)
     { 0 }
 };
 
 static ctk_fixed_lexeme_t eris_operators[] = {
-    ERIS_TOKENS_OPERATOR(ERIS_X_EXPAND_FIXED),
+    ERIS_TOKENS_OPERATOR(ERIS_X_EXPAND_FIXED)
     { 0 }
 };
 
@@ -35,6 +35,11 @@ static bool eris_is_identifier_start(ctk_lexer_t *lexer) {
 static bool eris_is_identifier_continue(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
     return isalnum(c) || c == '_';
+}
+
+static bool eris_is_number(ctk_lexer_t *lexer) {
+    uint32_t c = lexer->curr;
+    return isdigit(c) || c == '_';
 }
 
 static bool eris_is_separator(ctk_lexer_t *lexer) {
@@ -104,6 +109,14 @@ static void eris_lex_identifier(ctk_lexer_t *lexer, ctk_tokenlist_t *toks) {
     eris_emit(lexer, toks, kind);
 }
 
+static void eris_lex_number(ctk_lexer_t *lexer, ctk_tokenlist_t *toks) {
+    do {
+        ctk_lexer_advance(lexer);
+    } while (eris_is_number(lexer));
+
+    eris_emit(lexer, toks, ERIS_TOKEN_NUMBER);
+}
+
 static void eris_lex_separator(ctk_lexer_t *lexer, ctk_tokenlist_t *toks) {
     ctk_lexer_advance(lexer);
 
@@ -157,6 +170,8 @@ void eris_lex(ctk_textsrc_t *ts, ctk_tokenlist_t *toks) {
     do {
         if (eris_is_identifier_start(&lexer)) {
             eris_lex_identifier(&lexer, toks);
+        } else if (eris_is_number(&lexer)) {
+            eris_lex_number(&lexer, toks);
         } else if (eris_is_separator(&lexer)) {
             eris_lex_separator(&lexer, toks);
         } else if (eris_is_operator(&lexer)) {

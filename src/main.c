@@ -27,15 +27,15 @@ int main(int argc, char *argv[]) {
         goto done;
     }
 
-    eris_src_t src;
-    eris_src_init(&src, filename, file);
+    eris_codesrc_t csrc;
+    eris_codesrc_init(&csrc, filename, file);
 
     fclose(file);
 
-    eris_src_lex(&src);
-    eris_src_parse_file(&src);
+    eris_codesrc_lex(&csrc);
+    eris_codesrc_parse_file(&csrc);
 
-    eris_src_destruct(&src);
+    eris_codesrc_destruct(&csrc);
 
     res = 0;
 
