@@ -53,14 +53,14 @@ static eris_node_stmt_t **eris_parse_stmt_body(ctk_parser_t *parser) {
 
         if (stmt == NULL || ctk_parser_at_end(parser)) {
             ctk_rtti_delete(stmt);
-            ctk_rtti_list_delete(ctk_list_move_raw(&stmts));
+            ctk_rtti_list_delete(ctk_list_move(&stmts));
             return NULL;
         }
 
         ctk_list_add(&stmts, stmt);
     }
 
-    return (eris_node_stmt_t **)ctk_list_move_raw(&stmts);
+    return (eris_node_stmt_t **)ctk_list_move(&stmts);
 }
 
 static eris_node_decl_t *eris_parse_function_decl(ctk_parser_t *parser) {

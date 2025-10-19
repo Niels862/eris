@@ -5,17 +5,17 @@
 #include <assert.h>
 
 static ctk_fixed_lexeme_t eris_keywords[] = {
-    ERIS_TOKENS_KEYWORD(ERIS_X_EXPAND_FIXED)
+    ERIS_TOKENS_KEYWORD(ERIS_TOKEN_X_EXPAND_FIXED)
     { 0 }
 };
 
 static ctk_fixed_lexeme_t eris_separators[] = {
-    ERIS_TOKENS_SEPARATOR(ERIS_X_EXPAND_FIXED)
+    ERIS_TOKENS_SEPARATOR(ERIS_TOKEN_X_EXPAND_FIXED)
     { 0 }
 };
 
 static ctk_fixed_lexeme_t eris_operators[] = {
-    ERIS_TOKENS_OPERATOR(ERIS_X_EXPAND_FIXED)
+    ERIS_TOKENS_OPERATOR(ERIS_TOKEN_X_EXPAND_FIXED)
     { 0 }
 };
 

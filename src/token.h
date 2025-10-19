@@ -60,12 +60,12 @@
         ERIS_TOKENS_SEPARATOR(X) \
         ERIS_TOKENS_OTHER(X)
 
-#define ERIS_X_EXPAND_ENUM(e, s) ERIS_TOKEN_##e,
-#define ERIS_X_EXPAND_NAME(e, s) [ERIS_TOKEN_##e] = #e,
-#define ERIS_X_EXPAND_FIXED(e, s) { s, ERIS_TOKEN_##e },
+#define ERIS_TOKEN_X_EXPAND_ENUM(e, s) ERIS_TOKEN_##e,
+#define ERIS_TOKEN_X_EXPAND_NAME(e, s) [ERIS_TOKEN_##e] = #e,
+#define ERIS_TOKEN_X_EXPAND_FIXED(e, s) { s, ERIS_TOKEN_##e },
 
 typedef enum {
-    ERIS_TOKENS(ERIS_X_EXPAND_ENUM)
+    ERIS_TOKENS(ERIS_TOKEN_X_EXPAND_ENUM)
 } eris_tokenkind_t;
 
 extern ctk_zstr_t eris_token_names[];

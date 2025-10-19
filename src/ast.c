@@ -101,7 +101,7 @@ eris_node_source_t *eris_node_source_new(ctk_list_t *decls) {
     eris_node_source_t *node = eris_node_source_xalloc();
 
     eris_node_init(&node->node, &eris_node_source_rtti);
-    node->stmts = (eris_node_stmt_t **)ctk_list_move_raw(decls);
+    node->stmts = (eris_node_stmt_t **)ctk_list_move(decls);
 
     return node;
 }
