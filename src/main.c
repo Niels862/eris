@@ -1,9 +1,6 @@
 #include "source.h"
-#include "search.h"
-#include "lexer.h"
-#include "token.h"
-#include "ast.h"
-#include "ctk/text-source.h"
+#include "instruction.h"
+#include "code-generator.h"
 #include <stdio.h>
 
 void eris_init(void) {
@@ -36,6 +33,9 @@ int main(int argc, char *argv[]) {
     eris_codesrc_parse_file(&csrc);
 
     eris_codesrc_destruct(&csrc);
+
+    uint8_t code[] = { 0, 1, 2 };
+    eris_disassemble(code, 3);
 
     res = 0;
 

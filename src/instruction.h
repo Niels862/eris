@@ -1,6 +1,9 @@
 #ifndef ERIS_INSTRUCTION_H
 #define ERIS_INSTRUCTION_H
 
+#include <stddef.h>
+#include <stdint.h>
+
 #define ERIS_INSTRS_OTHER(X) \
         X(NOP, nop) \
         X(INVOKE, invoke) \
@@ -17,5 +20,9 @@ typedef enum {
 } eris_instr_t;
 
 extern char *eris_instr_names[];
+
+size_t eris_disassemble_instr(uint8_t *code);
+
+void eris_disassemble(uint8_t *code, size_t size);
 
 #endif
