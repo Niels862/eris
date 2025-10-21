@@ -31,11 +31,9 @@ int main(int argc, char *argv[]) {
 
     eris_codesrc_lex(&csrc);
     eris_codesrc_parse_file(&csrc);
+    eris_codesrc_generate(&csrc);
 
     eris_codesrc_destruct(&csrc);
-
-    uint8_t code[] = { 0, 1, 2 };
-    eris_disassemble(code, 3);
 
     res = 0;
 

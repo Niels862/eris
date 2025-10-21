@@ -8,19 +8,25 @@
 #include <stdbool.h>
 
 #define ERIS_AST_NODES(X) \
-        X(node) \
-        X(node_stmt) \
-        X(node_expr) \
-        X(node_type) \
-        X(node_decl) \
-        X(node_source) \
-        X(node_function_decl) \
-        X(node_expr_stmt) \
-        X(node_return) \
-        X(node_intlit)
+        X(BASE, node) \
+        X(STMT, node_stmt) \
+        X(EXPR, node_expr) \
+        X(TYPE, node_type) \
+        X(DECL, node_decl) \
+        X(SOURCE, node_source) \
+        X(FUNCTION_DECL, node_function_decl) \
+        X(EXPR_STMT, node_expr_stmt) \
+        X(RETURN, node_return) \
+        X(INTLIT, node_intlit)
 
-#define ERIS_DECLARE_AST_RTTI(t) CTK_RTTI_DECL(eris, t)
-#define ERIS_DEFINE_AST_RTTI(t) CTK_RTTI_DEFN(eris, t)
+#define ERIS_AST_X_EXPAND_ENUM(e, t) CTK_NODE_##e,
+
+#define ERIS_AST_X_EXPAND_RTTI_DECLARE(e, t) CTK_RTTI_DECL(eris, t)
+#define ERIS_AST_X_EXPAND_RTTI_DEFINE(e, t) CTK_RTTI_DEFN(eris, t)
+
+typedef enum {
+    ERIS_AST_NODES(ERIS_AST_X_EXPAND_ENUM)
+} ctk_astkind_t;
 
 typedef struct {
     ctk_rtti_t *meta;
@@ -82,6 +88,6 @@ eris_node_stmt_t *eris_node_return_new(ctk_token_t *token,
 
 eris_node_expr_t *eris_node_intlit_new(ctk_token_t *token, int64_t value);
 
-ERIS_AST_NODES(ERIS_DECLARE_AST_RTTI)
+ERIS_AST_NODES(ERIS_AST_X_EXPAND_RTTI_DECLARE)
 
 #endif
