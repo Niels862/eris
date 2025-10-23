@@ -5,15 +5,16 @@
 #include <stdint.h>
 
 #define ERIS_INSTRS_OTHER(X) \
-        X(NOP,          nop,            ERIS_FNONE) \
-        X(INVOKE,       invoke,         ERIS_FCLABEL) \
-        X(IRETURN,      ireturn,        ERIS_FNONE)
+        X(NOP,          nop,            NONE) \
+        X(INVOKE,       invoke,         CLABEL) \
+        X(IRETURN,      ireturn,        NONE)
 
 #define ERIS_INSTRS(X) \
         ERIS_INSTRS_OTHER(X)
 
 #define ERIS_INSTR_X_EXPAND_ENUM(e, s, f) ERIS_INSTR_##e,
 #define ERIS_INSTR_X_EXPAND_NAME(e, s, f) [ERIS_INSTR_##e] = #s,
+#define ERIS_INSTR_X_EXPAND_FORMAT(e, s, f) [ERIS_INSTR_##e] = ERIS_FORMAT_##f,
 
 typedef enum {
     ERIS_INSTRS(ERIS_INSTR_X_EXPAND_ENUM)
@@ -22,7 +23,13 @@ typedef enum {
 typedef uint16_t eris_clabel_t;
 typedef uint16_t eris_cindex_t;
 
+typedef enum {
+    ERIS_FORMAT_NONE,
+    ERIS_FORMAT_CLABEL,
+} eris_instr_format_t;
+
 extern char *eris_instr_names[];
+extern eris_instr_format_t eris_instr_formats[];
 
 size_t eris_disassemble_instr(uint8_t *code);
 

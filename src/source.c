@@ -25,6 +25,7 @@ void eris_codesrc_lex(eris_codesrc_t *csrc) {
         ctk_token_write(&csrc->toks.data[i], stderr);
         fprintf(stderr, "\n");
     }
+    fprintf(stderr, "\n");
 }
 
 void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
@@ -34,7 +35,7 @@ void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
     csrc->root = eris_parse_file(&span);
 
     ctk_rtti_write(csrc->root, 0, stderr);
-    fprintf(stderr, "\n");
+    fprintf(stderr, "\n\n");
 }
 
 void eris_codesrc_generate(eris_codesrc_t *csrc) {

@@ -38,16 +38,16 @@ static void eris_emit_instr_with_clabel(eris_codegen_t *gen,
     p[2] = (label >> 8) & 0xFF;
 }
 
-#define ERIS_FNONE(e, s) \
+#define ERIS_EMITTER_NONE(e, s) \
         inline static void eris_emit_##s(eris_codegen_t *gen) \
             { eris_emit_instr(gen, ERIS_INSTR_##e); }
 
-#define ERIS_FCLABEL(e, s) \
+#define ERIS_EMITTER_CLABEL(e, s) \
         inline static void eris_emit_##s(eris_codegen_t *gen, \
                                          eris_clabel_t label) \
             { eris_emit_instr_with_clabel(gen, ERIS_INSTR_##e, label); }
 
-#define ERIS_INSTR_X_EXPAND_EMIT(e, s, f) f(e, s)
+#define ERIS_INSTR_X_EXPAND_EMIT(e, s, f) ERIS_EMITTER_##f(e, s)
 
 ERIS_INSTRS(ERIS_INSTR_X_EXPAND_EMIT)
 

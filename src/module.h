@@ -10,4 +10,8 @@ typedef struct {
     size_t codesize;
 } eris_module_t;
 
+void eris_module_init(eris_module_t *mod, uint8_t *code, size_t codesize);
+
+void eris_module_destruct(eris_module_t *mod);
+
 #endif
