@@ -2,10 +2,20 @@
 #include "ctk/parser.h"
 #include <assert.h>
 
+// FIXME: overflow, errors, ...
+static int64_t eris_parse_number(ctk_token_t *num) {
+    int64_t s64 = 0;
+
+    for (char *s = num->lexeme.start; s != num->lexeme.end; s++) {
+        s64 = s64 * 10 + (*s - '0');
+    }
+
+    return s64;
+}
+
 static eris_node_expr_t *eris_parse_atom(ctk_parser_t *parser) {
     ctk_token_t *value = ctk_parser_expect(parser, ERIS_TOKEN_NUMBER);
-
-    return eris_node_intlit_new(value, 0);
+    return eris_node_intlit_new(value, eris_parse_number(value));
 }
 
 static eris_node_expr_t *eris_parse_expr(ctk_parser_t *parser) {

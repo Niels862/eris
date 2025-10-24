@@ -3,6 +3,7 @@
 #include "file-parser.h"
 #include "code-generator.h"
 #include "instruction.h"
+#include "constant-table.h"
 
 void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file) {
     ctk_textsrc_init_file(&csrc->textsrc, filename, file);
@@ -41,5 +42,5 @@ void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
 void eris_codesrc_generate(eris_codesrc_t *csrc) {
     eris_codegen(csrc->root, &csrc->mod);
 
-    eris_disassemble(csrc->mod.code, csrc->mod.codesize);
+    eris_module_ctable_write(&csrc->mod);
 }

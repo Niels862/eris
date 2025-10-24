@@ -20,9 +20,15 @@ size_t eris_disassemble_instr(uint8_t *code) {
             fprintf(stderr, "\n");
             return 1;
 
-        case ERIS_FORMAT_CLABEL: {
+        case ERIS_FORMAT_CINDEX: {
             eris_clabel_t label = code[1] | (code[2] << 8);
             fprintf(stderr, " c[%d]\n", label);
+            return 3;
+        }
+
+        case ERIS_FORMAT_S16: {
+            int16_t s16 = code[1] | (code[2] << 8);
+            fprintf(stderr, " %d\n", s16);
             return 3;
         }
 
