@@ -26,11 +26,9 @@ static void eris_codegen_init(eris_codegen_t *gen, eris_codegen_visit_t *visitor
 static void eris_codegen_move_to_module(eris_codegen_t *gen, 
                                         eris_module_t *mod) {
     eris_module_init(mod, 
-                     ctk_dynarr_move(&gen->code), 
-                     gen->code.size,
-                     ctk_dynarr_move(&gen->ctable), 
-                     gen->ctable.size / sizeof(uint32_t), 
-                     ctk_dynarr_move(&gen->cdata));
+        ctk_dynarr_move(&gen->code),    gen->code.size,
+        ctk_dynarr_move(&gen->ctable),  gen->ctable.size / sizeof(uint32_t), 
+        ctk_dynarr_move(&gen->cdata));
 }
 
 static void *eris_codegen_add_const(eris_codegen_t *gen, 

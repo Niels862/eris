@@ -14,9 +14,9 @@ void eris_module_init(eris_module_t *mod,
 }
 
 void eris_module_destruct(eris_module_t *mod) {
-    ctk_xfree(mod->code);
-    ctk_xfree(mod->ctable);
-    ctk_xfree(mod->cdata);
+    ctk_free(&mod->code);
+    ctk_free(&mod->ctable);
+    ctk_free(&mod->cdata);
 }
 
 void eris_module_ctable_write(eris_module_t *mod) {

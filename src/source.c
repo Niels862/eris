@@ -9,9 +9,11 @@ void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file) {
     ctk_textsrc_init_file(&csrc->textsrc, filename, file);
     ctk_tokenlist_init(&csrc->toks);
     csrc->root = NULL;
+    eris_module_init(&csrc->mod, NULL, 0, NULL, 0, NULL);
 }
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc) {
+    eris_module_destruct(&csrc->mod);
     ctk_rtti_delete(csrc->root);
     ctk_tokenlist_destruct(&csrc->toks);
     ctk_textsrc_destruct(&csrc->textsrc);
