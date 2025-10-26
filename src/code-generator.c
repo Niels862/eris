@@ -4,6 +4,7 @@
 #include "constant-table.h"
 #include "ctk/rtti.h"
 #include "ctk/list.h"
+#include "string.h"
 #include <assert.h>
 
 typedef struct eris_codegen_t eris_codegen_t;
@@ -34,20 +35,37 @@ static void eris_codegen_move_to_module(eris_codegen_t *gen,
 
 static void *eris_codegen_add_const(eris_codegen_t *gen, 
                                     eris_centry_kind_t kind, 
+                                    size_t size,
                                     eris_cindex_t *idx) {
-    size_t size = eris_centry_size[kind];
-    size_t align = eris_centry_align[kind];
+    size_t csize = eris_centry_size[kind] + size;
+    size_t calign = eris_centry_align[kind];
 
     *idx = ctk_list_size(&gen->ctable);
 
-    void *c = ctk_pool_alloc_aligned(&gen->cpool, size, align);
+    void *c = ctk_pool_alloc_aligned(&gen->cpool, csize, calign);
     ctk_list_add(&gen->ctable, c);
+
+    fprintf(stderr, "* %p?\n", c);
 
     *(uint8_t *)c = kind;
 
-    assert((uintptr_t)c % align == 0);
+    assert((uintptr_t)c % calign == 0);
 
     return c;
+}
+
+static eris_cindex_t eris_codegen_add_str(eris_codegen_t *gen, 
+                                          char *s, size_t size) {
+    eris_cindex_t idx;
+    eris_const_str_t *c = eris_codegen_add_const(gen, ERIS_CONST_STR, 
+                                                 size, &idx);
+    
+    c->size = size;
+    memcpy(c->data, s, size);
+
+    fprintf(stderr, "* added %.*s\n", (int)size, s);
+
+    return idx;
 }
 
 static void eris_emit_instr(eris_codegen_t *gen, eris_instr_t instr) {
@@ -114,9 +132,12 @@ static void eris_codegen_source(eris_codegen_t *gen, void *vnode) {
 static void eris_codegen_function_decl(eris_codegen_t *gen, void *vnode) {
     eris_node_function_decl_t *node = eris_node_function_decl_dyncast(vnode);
 
-    eris_cindex_t idx;
-    eris_const_function_t *c 
-            = eris_codegen_add_const(gen, ERIS_CONST_FUNCTION, &idx);
+    eris_cindex_t fidx;
+    eris_const_function_t *c = eris_codegen_add_const(gen, ERIS_CONST_FUNCTION, 
+                                                      0, &fidx);
+
+    ctk_strspan_t *name = &node->decl.name->lexeme;
+    c->name = eris_codegen_add_str(gen, name->start, name->end - name->start);
 
     c->codestart = gen->code.size;
 
@@ -125,8 +146,6 @@ static void eris_codegen_function_decl(eris_codegen_t *gen, void *vnode) {
     }
 
     c->codesize = gen->code.size - c->codestart;
-
-    (void)c;
 }
 
 static void eris_codegen_expr_stmt(eris_codegen_t *gen, void *vnode) {
