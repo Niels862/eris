@@ -1,7 +1,7 @@
 #include "source.h"
 #include "lexer.h"
 #include "file-parser.h"
-#include "code-generator.h"
+#include "backend/code-generator.h"
 #include "instruction.h"
 #include "constant-table.h"
 

@@ -1,6 +1,5 @@
 #include "source.h"
 #include "instruction.h"
-#include "code-generator.h"
 #include "loader.h"
 #include "virtual-machine.h"
 #include <stdio.h>

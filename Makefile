@@ -1,6 +1,7 @@
 CC          := gcc
 CCSTD       := c99
 
+INC_DIR 	:= src
 SRC_DIR     := src
 BUILD_DIR   := build
 
@@ -20,7 +21,7 @@ else
 endif
 
 CCFLAGS += -Wall -Wextra -Werror -pedantic -std=$(CCSTD)
-CFLAGS  := -MMD -MP -I$(CTK_INCLUDE)
+CFLAGS  := -MMD -MP -I$(CTK_INCLUDE) -I$(INC_DIR)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.c')
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
