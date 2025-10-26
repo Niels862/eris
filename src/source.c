@@ -9,7 +9,8 @@ void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file) {
     ctk_textsrc_init_file(&csrc->textsrc, filename, file);
     ctk_tokenlist_init(&csrc->toks);
     csrc->root = NULL;
-    eris_module_init(&csrc->mod, NULL, 0, NULL, 0, NULL);
+    // eris_module_init(&csrc->mod, NULL, 0, NULL, 0, NULL);
+    // TODO: figure out how to initialize empty module
 }
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc) {

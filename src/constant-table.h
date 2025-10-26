@@ -24,7 +24,6 @@ extern const size_t eris_centry_align[];
 
 void eris_const_write(void *vc, uint8_t *code);
 
-void eris_ctable_write(uint32_t *ctable, uint32_t ctablesize, 
-                       uint8_t *cdata, uint8_t *code);
+void eris_ctable_write(void **ctable, uint32_t ctablesize, uint8_t *code);
 
 #endif

@@ -3,6 +3,7 @@
 #include "instruction.h"
 #include "constant-table.h"
 #include "ctk/rtti.h"
+#include "ctk/list.h"
 #include <assert.h>
 
 typedef struct eris_codegen_t eris_codegen_t;
@@ -11,24 +12,24 @@ typedef void(*eris_codegen_visit_t)(eris_codegen_t *gen, void *node);
 
 struct eris_codegen_t {
     ctk_dynarr_t code;
-    ctk_dynarr_t ctable;
-    ctk_dynarr_t cdata;
+    ctk_list_t ctable;
+    ctk_pool_t cpool;
     eris_codegen_visit_t *visitors;
 };
 
 static void eris_codegen_init(eris_codegen_t *gen, eris_codegen_visit_t *visitors) {
-    ctk_dynarr_init(&gen->code,     16);
-    ctk_dynarr_init(&gen->ctable,   16);
-    ctk_dynarr_init(&gen->cdata,    16);
+    ctk_dynarr_init(&gen->code, 16);
+    ctk_list_init(&gen->ctable, 16);
+    ctk_pool_init(&gen->cpool);
     gen->visitors = visitors;
 }
 
 static void eris_codegen_move_to_module(eris_codegen_t *gen, 
                                         eris_module_t *mod) {
     eris_module_init(mod, 
-        ctk_dynarr_move(&gen->code),    gen->code.size,
-        ctk_dynarr_move(&gen->ctable),  gen->ctable.size / sizeof(uint32_t), 
-        ctk_dynarr_move(&gen->cdata));
+        ctk_dynarr_move(&gen->code), gen->code.size,
+        ctk_list_move(&gen->ctable), ctk_list_size(&gen->ctable), 
+        &gen->cpool);
 }
 
 static void *eris_codegen_add_const(eris_codegen_t *gen, 
@@ -37,20 +38,13 @@ static void *eris_codegen_add_const(eris_codegen_t *gen,
     size_t size = eris_centry_size[kind];
     size_t align = eris_centry_align[kind];
 
-    *idx = gen->ctable.size / sizeof(uint32_t);
+    *idx = ctk_list_size(&gen->ctable);
 
-    size_t aligner = align - gen->cdata.size % align;
-    if (aligner != 0) { // FIXME: replace with aligned dynarr allocator when available.
-        ctk_dynarr_add(&gen->cdata, aligner);
-    }
+    void *c = ctk_pool_alloc_aligned(&gen->cpool, size, align);
+    ctk_list_add(&gen->ctable, c);
 
-    uint32_t *dataidx = ctk_dynarr_add(&gen->ctable, sizeof(uint32_t));
-    *dataidx = gen->cdata.size;
+    *(uint8_t *)c = kind;
 
-    uint8_t *c = ctk_dynarr_add(&gen->cdata, size);
-    c[0] = kind;
-
-    assert((uintptr_t)c == (uintptr_t)gen->cdata.data + *dataidx);
     assert((uintptr_t)c % align == 0);
 
     return c;

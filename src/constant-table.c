@@ -21,12 +21,10 @@ void eris_const_write(void *vc, uint8_t *code) {
     }
 }
 
-void eris_ctable_write(uint32_t *ctable, uint32_t ctablesize, 
-                       uint8_t *cdata, uint8_t *code) {
+void eris_ctable_write(void **ctable, uint32_t ctablesize, uint8_t *code) {
     for (size_t i = 0; i < ctablesize; i++) {
-        uint32_t idx = ctable[i];
-
+        void *c = ctable[i];
         fprintf(stderr, "[%ld] ", i);
-        eris_const_write(cdata + idx, code);
+        eris_const_write(c, code);
     }
 }
