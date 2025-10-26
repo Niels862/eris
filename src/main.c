@@ -1,6 +1,7 @@
 #include "source.h"
 #include "instruction.h"
 #include "code-generator.h"
+#include "loader.h"
 #include "virtual-machine.h"
 #include <stdio.h>
 
@@ -33,6 +34,8 @@ int main(int argc, char *argv[]) {
     eris_codesrc_lex(&csrc);
     eris_codesrc_parse_file(&csrc);
     eris_codesrc_generate(&csrc);
+
+    eris_load(&csrc.mod);
 
     eris_run(&csrc.mod);
 

@@ -45,8 +45,6 @@ static void *eris_codegen_add_const(eris_codegen_t *gen,
     void *c = ctk_pool_alloc_aligned(&gen->cpool, csize, calign);
     ctk_list_add(&gen->ctable, c);
 
-    fprintf(stderr, "* %p?\n", c);
-
     *(uint8_t *)c = kind;
 
     assert((uintptr_t)c % calign == 0);
@@ -62,8 +60,6 @@ static eris_cindex_t eris_codegen_add_str(eris_codegen_t *gen,
     
     c->size = size;
     memcpy(c->data, s, size);
-
-    fprintf(stderr, "* added %.*s\n", (int)size, s);
 
     return idx;
 }
