@@ -2,6 +2,17 @@
 #include "constant-table.h"
 #include "ctk/allocator.h"
 
+void eris_module_init_empty(eris_module_t *mod) {
+    mod->code = NULL;
+    mod->codesize = 0;
+    mod->ctable = NULL;
+    mod->ctablesize = 0;
+
+    // TODO: add empty pool constructor?
+    mod->cpool.block = NULL;
+    mod->cpool.blocksize = 0;
+}
+
 void eris_module_init(eris_module_t *mod, 
                       uint8_t *code, size_t codesize, 
                       void **ctable, size_t ctablesize,

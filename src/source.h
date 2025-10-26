@@ -10,10 +10,11 @@ typedef struct {
     ctk_textsrc_t textsrc;
     ctk_tokenlist_t toks;
     eris_node_source_t *root;
-    eris_module_t mod;
+    eris_module_t *mod;
 } eris_codesrc_t;
 
-void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file);
+void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file,
+                       eris_module_t *mod);
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc);
 

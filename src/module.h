@@ -16,6 +16,8 @@ typedef struct {
     ctk_pool_t cpool;
 } eris_module_t;
 
+void eris_module_init_empty(eris_module_t *mod);
+
 void eris_module_init(eris_module_t *mod, 
                       uint8_t *code, size_t codesize, 
                       void **ctable, size_t ctablesize,

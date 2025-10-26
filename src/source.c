@@ -5,12 +5,12 @@
 #include "instruction.h"
 #include "constant-table.h"
 
-void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file) {
+void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file,
+                       eris_module_t *mod) {
     ctk_textsrc_init_file(&csrc->textsrc, filename, file);
     ctk_tokenlist_init(&csrc->toks);
     csrc->root = NULL;
-    // eris_module_init(&csrc->mod, NULL, 0, NULL, 0, NULL);
-    // TODO: figure out how to initialize empty module
+    csrc->mod = mod;
 }
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc) {
@@ -43,7 +43,7 @@ void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
 }
 
 void eris_codesrc_generate(eris_codesrc_t *csrc) {
-    eris_codegen(csrc->root, &csrc->mod);
+    eris_codegen(csrc->root, csrc->mod);
 
-    eris_module_ctable_write(&csrc->mod);
+    eris_module_ctable_write(csrc->mod);
 }

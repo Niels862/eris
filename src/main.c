@@ -25,8 +25,11 @@ int main(int argc, char *argv[]) {
         goto done;
     }
 
+    eris_module_t mod;
+    eris_module_init_empty(&mod);
+
     eris_codesrc_t csrc;
-    eris_codesrc_init(&csrc, filename, file);
+    eris_codesrc_init(&csrc, filename, file, &mod);
 
     fclose(file);
 
@@ -34,9 +37,9 @@ int main(int argc, char *argv[]) {
     eris_codesrc_parse_file(&csrc);
     eris_codesrc_generate(&csrc);
 
-    eris_load(&csrc.mod);
+    eris_load(&mod);
 
-    eris_run(&csrc.mod);
+    eris_run(&mod);
 
     eris_codesrc_destruct(&csrc);
 
