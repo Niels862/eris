@@ -1,5 +1,4 @@
 #include "loader.h"
-#include "constant-table.h"
 #include "ctk/map.h"
 #include "ctk/allocator.h"
 #include "stdio.h"
@@ -80,7 +79,7 @@ void *eris_loader_resolve_string(eris_loader_t *ld, char *s) {
     return eris_loader_resolve(ld, cs);
 }
 
-void eris_load(eris_module_t *mod) {
+eris_const_function_t *eris_load(eris_module_t *mod) {
     eris_loader_t ld;
     eris_loader_init(&ld, mod);
 
@@ -94,6 +93,9 @@ void eris_load(eris_module_t *mod) {
     } else {
         eris_const_write(p, mod->code, mod->ctable);
     }
+    fprintf(stderr, "\n");
 
     eris_loader_destruct(&ld);
+
+    return p;
 }

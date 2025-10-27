@@ -1,5 +1,6 @@
 #include "source.h"
 #include "instruction.h"
+#include "constant-table.h"
 #include "loader.h"
 #include "virtual-machine.h"
 #include <stdio.h>
@@ -37,9 +38,9 @@ int main(int argc, char *argv[]) {
     eris_codesrc_parse_file(&csrc);
     eris_codesrc_generate(&csrc);
 
-    eris_load(&mod);
+    eris_const_function_t *entry = eris_load(&mod);
 
-    eris_run(&mod);
+    eris_run(&mod, entry);
 
     eris_codesrc_destruct(&csrc);
 

@@ -14,7 +14,6 @@ void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file,
 }
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc) {
-    eris_module_destruct(&csrc->mod);
     ctk_rtti_delete(csrc->root);
     ctk_tokenlist_destruct(&csrc->toks);
     ctk_textsrc_destruct(&csrc->textsrc);
