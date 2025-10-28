@@ -32,6 +32,10 @@ void eris_run(eris_module_t *mod, eris_const_function_t *entry) {
     while (true) {
         eris_stackframe_t *curr = &vm.frames[vm.top];
         eris_instr_t instr = mod->code[curr->instr];
+
+        fprintf(stderr, "%6d ", curr->instr);
+        eris_disassemble_instr(&mod->code[curr->instr]);
+
         uint8_t *arg = &mod->code[curr->instr + 1];
         curr->instr += eris_instr_sizes[instr];
 

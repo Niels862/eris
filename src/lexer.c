@@ -27,6 +27,14 @@ static void eris_emit(ctk_lexer_t *lexer, ctk_tokenlist_t *toks,
     ctk_tokenlist_add(toks, &tok);
 }
 
+static void eris_emit_builtin(ctk_lexer_t *lexer, ctk_tokenlist_t *toks, 
+                              ctk_builtin_tokenkind_t kind) {
+    static ctk_token_t tok;
+
+    ctk_lexer_emit(lexer, &tok, kind);
+    ctk_tokenlist_add(toks, &tok);
+}
+
 static bool eris_is_identifier_start(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
     return isalpha(c) || c == '_';
@@ -167,6 +175,8 @@ void eris_lex(ctk_textsrc_t *ts, ctk_tokenlist_t *toks) {
     ctk_lexer_t lexer;
     ctk_lexer_init(&lexer, ts, ctk_decode_raw);
 
+    eris_emit_builtin(&lexer, toks, CTK_TOKEN_STARTSOURCE);
+
     do {
         if (eris_is_identifier_start(&lexer)) {
             eris_lex_identifier(&lexer, toks);
@@ -187,6 +197,7 @@ void eris_lex(ctk_textsrc_t *ts, ctk_tokenlist_t *toks) {
     } while (!ctk_lexer_at_eof(&lexer));
 
     eris_emit(&lexer, toks, ERIS_TOKEN_EOF);
+    eris_emit_builtin(&lexer, toks, CTK_TOKEN_ENDSOURCE);
 
-    ctk_tokenlist_lock(toks);
+    ctk_tokenlist_finalize(toks);
 }

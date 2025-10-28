@@ -107,6 +107,8 @@ eris_node_source_t *eris_parse_file(ctk_span_t *span) {
     ctk_list_t decls;
     ctk_list_init(&decls, 4);
 
+    ctk_parser_expect(&parser, CTK_TOKEN_STARTSOURCE);
+
     while (!ctk_parser_accept(&parser, ERIS_TOKEN_EOF)) {
         eris_node_decl_t *decl = eris_parse_decl(&parser);
 
@@ -117,8 +119,8 @@ eris_node_source_t *eris_parse_file(ctk_span_t *span) {
         }
     }
 
-    /* Guaranteed by lexer. */
+    ctk_parser_expect(&parser, CTK_TOKEN_ENDSOURCE);
     assert(ctk_parser_at_end(&parser));
-
+    
     return eris_node_source_new(&decls);
 }
