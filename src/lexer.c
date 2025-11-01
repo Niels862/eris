@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "token.h"
+#include "ctk/text-context-writer.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -18,6 +19,35 @@ static ctk_fixed_lexeme_t eris_operators[] = {
     ERIS_TOKENS_OPERATOR(ERIS_TOKEN_X_EXPAND_FIXED)
     { 0 }
 };
+
+static void eris_lexer_error(ctk_lexer_t *lexer, char const *msg) {
+    static ctk_textctx_style_t style = {
+        .useansi    = true,
+        .usemarker  = true,
+        
+        .markstart  = '^',
+        .markinter  = '~',
+        .markend    = '~',
+
+        .linepad    = 5,
+
+        .focus      = CTK_ANSI_FG_BRIGHT(CTK_ANSI_RED),
+        .marker     = CTK_ANSI_FG_BRIGHT(CTK_ANSI_YELLOW),
+    };
+
+    ctk_token_t tok;
+    ctk_lexer_emit(lexer, &tok, ERIS_TOKEN_UNRECOGNIZED);
+
+    ctk_textctx_writer_t writer = {
+        .style      = &style,
+        .focus      = &tok,
+    };
+
+    fprintf(stderr, "%s:%d:%d: " CTK_ANSI_FG_BRIGHT(CTK_ANSI_RED) 
+            "error:" CTK_ANSI_RESET " %s\n", 
+            tok.src->name, tok.pos.line, tok.pos.col, msg);
+    ctk_textctk_write(&writer);
+}
 
 static void eris_emit(ctk_lexer_t *lexer, ctk_tokenlist_t *toks, 
                       eris_tokenkind_t kind) {
@@ -154,9 +184,11 @@ static void eris_lex_operator(ctk_lexer_t *lexer, ctk_tokenlist_t *toks) {
 
     if (kind != ERIS_TOKEN_UNRECOGNIZED) {
         ctk_lexer_restore_state(lexer, &state);
+        eris_emit(lexer, toks, kind);
+    } else {
+        eris_lexer_error(lexer, "unrecognized operator");
     }
     
-    eris_emit(lexer, toks, kind);
 }
 
 static void eris_lex_whitespace(ctk_lexer_t *lexer) {
@@ -196,7 +228,7 @@ void eris_lex(ctk_textsrc_t *ts, ctk_tokenlist_t *toks) {
             eris_lex_comment(&lexer);
         } else {
             ctk_lexer_advance(&lexer);
-            eris_emit(&lexer, toks, ERIS_TOKEN_UNRECOGNIZED);
+            eris_lexer_error(&lexer, "unrecognized character");
         }
     } while (!ctk_lexer_at_eof(&lexer));
 
