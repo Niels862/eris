@@ -35,19 +35,23 @@ static void eris_emit_builtin(ctk_lexer_t *lexer, ctk_tokenlist_t *toks,
     ctk_tokenlist_add(toks, &tok);
 }
 
+static bool eris_is_ascii(uint32_t c) {
+    return c <= 0x7F;
+}
+
 static bool eris_is_identifier_start(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
-    return isalpha(c) || c == '_';
+    return eris_is_ascii(c) && (isalpha(c) || c == '_');
 }
 
 static bool eris_is_identifier_continue(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
-    return isalnum(c) || c == '_';
+    return eris_is_ascii(c) && (isalnum(c) || c == '_');
 }
 
 static bool eris_is_number(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
-    return isdigit(c) || c == '_';
+    return eris_is_ascii(c) && (isdigit(c) || c == '_');
 }
 
 static bool eris_is_separator(ctk_lexer_t *lexer) {
@@ -101,7 +105,7 @@ static bool eris_is_comment_start(ctk_lexer_t *lexer) {
 
 static bool eris_is_comment_continue(ctk_lexer_t *lexer) {
     uint32_t c = lexer->curr;
-    return isprint(c) && c != '\n';
+    return eris_is_ascii(c) && (isprint(c) && c != '\n');
 }
 
 static void eris_lex_identifier(ctk_lexer_t *lexer, ctk_tokenlist_t *toks) {
