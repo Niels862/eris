@@ -33,7 +33,10 @@ void eris_codesrc_lex(eris_codesrc_t *csrc) {
 
 void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
     ctk_span_t span;
-    ctk_tokenlist_to_span(&csrc->toks, &span);
+    //ctk_tokenlist_to_span(&csrc->toks, &span); TODO: fix in CTK
+    ctk_span_init(&span, 
+                  &csrc->toks.data[1], 
+                  &csrc->toks.data[csrc->toks.size - 2]);
 
     csrc->root = eris_parse_file(&span);
 

@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "token.h"
+#include "eris.h"
 #include "ctk/text-context-writer.h"
 #include <ctype.h>
 #include <stdbool.h>
@@ -21,32 +22,18 @@ static ctk_fixed_lexeme_t eris_operators[] = {
 };
 
 static void eris_lexer_error(ctk_lexer_t *lexer, char const *msg) {
-    static ctk_textctx_style_t style = {
-        .useansi    = true,
-        .usemarker  = true,
-        
-        .markstart  = '^',
-        .markinter  = '~',
-        .markend    = '~',
-
-        .linepad    = 5,
-
-        .focus      = CTK_ANSI_FG_BRIGHT(CTK_ANSI_RED),
-        .marker     = CTK_ANSI_FG_BRIGHT(CTK_ANSI_YELLOW),
-    };
-
     ctk_token_t tok;
     ctk_lexer_emit(lexer, &tok, ERIS_TOKEN_UNRECOGNIZED);
 
     ctk_textctx_writer_t writer = {
-        .style      = &style,
+        .style      = &eris_context_style,
         .focus      = &tok,
     };
 
     fprintf(stderr, "%s:%d:%d: " CTK_ANSI_FG_BRIGHT(CTK_ANSI_RED) 
             "error:" CTK_ANSI_RESET " %s\n", 
             tok.src->name, tok.pos.line, tok.pos.col, msg);
-    ctk_textctk_write(&writer);
+    ctk_textctx_write(&writer);
 }
 
 static void eris_emit(ctk_lexer_t *lexer, ctk_tokenlist_t *toks, 
