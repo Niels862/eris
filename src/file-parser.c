@@ -14,13 +14,17 @@ static int64_t eris_parse_number(ctk_token_t *num) {
 }
 
 static eris_node_expr_t *eris_parse_atom(eris_parser_t *parser) {
-    ctk_token_t *value = ctk_parser_expect(parser, ERIS_TOKEN_NUMBER, 
-                                           "expected value");
+    ctk_token_t *value = NULL;
+    
+    value = ctk_parser_expect(parser, ERIS_TOKEN_NUMBER, "expected value");
     if (value == NULL) {
-        return NULL;
+        goto error;
     }
 
     return eris_node_intlit_new(value, eris_parse_number(value));
+
+error:
+    return NULL;
 }
 
 static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser) {
@@ -28,12 +32,14 @@ static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser) {
 }
 
 static eris_node_stmt_t *eris_parse_return(eris_parser_t *parser) {
+    eris_node_expr_t *value = NULL;
+    
     ctk_token_t *token = ctk_parser_expect(parser, ERIS_TOKEN_RETURN, NULL);
     if (token == NULL) {
-        return NULL;
+        goto error;
     }
 
-    eris_node_expr_t *value = eris_parse_expr(parser);
+    value = eris_parse_expr(parser);
     if (value == NULL) {
         goto error;
     }
@@ -52,7 +58,7 @@ error:
 static eris_node_stmt_t *eris_parse_expr_stmt(eris_parser_t *parser) {
     eris_node_expr_t *expr = eris_parse_expr(parser);
     if (expr == NULL) {
-        return NULL;
+        goto error;
     }
 
     if (!ctk_parser_expect(parser, ERIS_TOKEN_SEMICOLON, NULL)) {
@@ -91,7 +97,10 @@ static eris_node_stmt_t **eris_parse_stmt_body(eris_parser_t *parser) {
         eris_node_stmt_t *stmt = eris_parse_stmt(parser);
         if (stmt == NULL) {
             has_error = true;
-            ctk_parser_advance(parser);
+
+            if (ctk_parser_curr(parser)->kind != ERIS_TOKEN_RBRACE) {
+                ctk_parser_advance(parser);
+            }
         } else {
             ctk_list_add(&stmts, stmt);
             stmt = NULL;
@@ -173,17 +182,25 @@ eris_node_source_t *eris_parse_file(ctk_span_t *span) {
     ctk_list_t decls;
     ctk_list_init(&decls, 4);
 
+    bool has_error = false;
     while (!ctk_parser_at_end(&parser)) {
         eris_node_decl_t *decl = eris_parse_decl(&parser);
 
         if (decl == NULL) {
+            has_error = true;
             ctk_parser_advance(&parser);
         } else {
             ctk_list_add(&decls, decl);
         }
     }
-
-    assert(ctk_parser_at_end(&parser));
     
+    if (has_error) {
+        goto error;
+    }
+
     return eris_node_source_new(&decls);
+
+error:
+    ctk_list_destruct(&decls);
+    return NULL;
 }

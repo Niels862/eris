@@ -1,6 +1,6 @@
 function test() {
-    69;
-    return 42;
+    69
+    return 42
 }
 
 function main() {
