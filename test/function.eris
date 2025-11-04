@@ -1,9 +1,9 @@
 function test() {
     69;
-    return 42 x
+    return 42;
 }
 
-function main() {
+function main() -> int {
     0;
     return 0;
-
+}

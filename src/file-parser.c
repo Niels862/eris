@@ -2,6 +2,18 @@
 #include "parser.h"
 #include <assert.h>
 
+static eris_node_type_t *eris_parse_type(ctk_parser_t *parser) {
+    ctk_token_t *curr = parser->curr;
+
+    ctk_token_t *name = ctk_parser_accept(parser, ERIS_TOKEN_IDENTIFIER);
+    if (name != NULL) {
+        return eris_node_named_type_new(name);
+    }
+
+    parser->expect_error(curr, 0, "expected type");
+    return NULL;
+}
+
 // FIXME: overflow, errors, ...
 static int64_t eris_parse_number(ctk_token_t *num) {
     int64_t s64 = 0;
@@ -131,6 +143,7 @@ error:
 }
 
 static eris_node_decl_t *eris_parse_function_decl(eris_parser_t *parser) {
+    eris_node_type_t *rettype = NULL;
     eris_node_stmt_t **stmts = NULL;
     
     if (!ctk_parser_expect(parser, ERIS_TOKEN_FUNCTION, NULL)) {
@@ -149,15 +162,23 @@ static eris_node_decl_t *eris_parse_function_decl(eris_parser_t *parser) {
     if (!ctk_parser_expect(parser, ERIS_TOKEN_RPAREN, NULL)) {
         goto error;
     }
-   
+
+    if (ctk_parser_accept(parser, ERIS_TOKEN_ARROW)) {
+        rettype = eris_parse_type(parser);
+        if (rettype == NULL) {
+            goto error;
+        }
+    }
+
     stmts = eris_parse_stmt_body(parser);
     if (stmts == NULL) {
         goto error;
     }
 
-    return eris_node_function_decl_new(name, stmts);
+    return eris_node_function_decl_new(name, rettype, stmts);
 
 error:
+    ctk_rtti_delete(rettype);
     ctk_rtti_list_delete((void **)stmts);
     return NULL;
 }
