@@ -2,6 +2,8 @@
 #include "parser.h"
 #include <assert.h>
 
+static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser);
+
 static eris_node_type_t *eris_parse_type(ctk_parser_t *parser) {
     ctk_token_t *curr = parser->curr;
 
@@ -26,14 +28,32 @@ static int64_t eris_parse_number(ctk_token_t *num) {
 }
 
 static eris_node_expr_t *eris_parse_atom(eris_parser_t *parser) {
-    ctk_token_t *value = NULL;
-    
-    value = ctk_parser_expect(parser, ERIS_TOKEN_NUMBER, "expected value");
-    if (value == NULL) {
-        goto error;
+    eris_node_expr_t *expr = NULL;
+    ctk_token_t *curr = parser->curr;
+
+    switch (curr->kind) {
+        case ERIS_TOKEN_NUMBER: {
+            ctk_parser_advance(parser);
+            expr = eris_node_intlit_new(curr, eris_parse_number(curr));
+            break;
+        }
+
+        case ERIS_TOKEN_LPAREN: {
+            ctk_parser_advance(parser);
+            expr = eris_parse_expr(parser);
+            if (!ctk_parser_expect(parser, ERIS_TOKEN_RPAREN, NULL)) {
+                goto error;
+            }
+            break;
+        }
+
+        default: {
+            parser->expect_error(curr, 0, "expected value");
+            goto error;
+        }
     }
 
-    return eris_node_intlit_new(value, eris_parse_number(value));
+    return expr;
 
 error:
     return NULL;
