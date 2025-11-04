@@ -110,7 +110,7 @@ static eris_node_stmt_t **eris_parse_stmt_body(eris_parser_t *parser) {
             // Temporary bypass. parser_get_curr should be configurable to 
             // either keep repeating the final token or to return NONE
             ctk_token_t *curr = parser->curr;
-            parser->expect_error(curr, 0, "expected '}'");
+            parser->expect_error(curr, ERIS_TOKEN_RBRACE, NULL);
             
             goto error;
         }
