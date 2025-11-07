@@ -1,5 +1,5 @@
-#include "parser.h"
-#include "token.h"
+#include "frontend/parser.h"
+#include "frontend/token.h"
 #include "eris.h"
 #include "ctk/text-context-writer.h"
 #include <assert.h>

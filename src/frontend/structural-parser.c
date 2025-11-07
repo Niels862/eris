@@ -1,5 +1,5 @@
-#include "structural-parser.h"
-#include "parser.h"
+#include "frontend/structural-parser.h"
+#include "frontend/parser.h"
 
 void eris_parse_body(eris_parser_t *p, ctk_list_t *stmts);
 

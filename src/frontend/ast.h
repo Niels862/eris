@@ -1,7 +1,7 @@
 #ifndef ERIS_AST_H
 #define ERIS_AST_H
 
-#include "token.h"
+#include "frontend/token.h"
 #include "ctk/rtti.h"
 #include "ctk/list.h"
 #include <stdint.h>

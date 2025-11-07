@@ -1,10 +1,10 @@
-#include "source.h"
-#include "lexer.h"
-#include "file-parser.h"
-#include "structural-parser.h"
+#include "frontend/source.h"
+#include "frontend/lexer.h"
+#include "frontend/file-parser.h"
+#include "frontend/structural-parser.h"
 #include "backend/code-generator.h"
-#include "instruction.h"
-#include "constant-table.h"
+#include "runtime/instruction.h"
+#include "runtime/constant-table.h"
 
 void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file,
                        eris_module_t *mod) {

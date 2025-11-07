@@ -1,4 +1,4 @@
-#include "ast.h"
+#include "frontend/ast.h"
 #include <assert.h>
 
 static ctk_rtti_t eris_node_rtti = {

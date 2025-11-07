@@ -1,8 +1,8 @@
 #include "backend/code-generator.h"
 #include "backend/code-generator-util.h"
-#include "ast.h"
-#include "instruction.h"
-#include "constant-table.h"
+#include "frontend/ast.h"
+#include "runtime/instruction.h"
+#include "runtime/constant-table.h"
 #include "ctk/rtti.h"
 #include "ctk/list.h"
 #include <assert.h>

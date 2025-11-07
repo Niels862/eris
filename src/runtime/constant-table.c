@@ -1,5 +1,5 @@
-#include "constant-table.h"
-#include "instruction.h"
+#include "runtime/constant-table.h"
+#include "runtime/instruction.h"
 #include "ctk/string-span.h"
 #include <stdio.h>
 

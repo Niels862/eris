@@ -1,8 +1,8 @@
-#include "source.h"
-#include "instruction.h"
-#include "constant-table.h"
-#include "loader.h"
-#include "virtual-machine.h"
+#include "frontend/source.h"
+#include "runtime/instruction.h"
+#include "runtime/constant-table.h"
+#include "runtime/loader.h"
+#include "runtime/virtual-machine.h"
 #include <stdio.h>
 
 void eris_init(void) {

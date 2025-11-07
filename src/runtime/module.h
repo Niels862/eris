@@ -1,7 +1,7 @@
 #ifndef ERIS_MODULE_H
 #define ERIS_MODULE_H
 
-#include "instruction.h"
+#include "runtime/instruction.h"
 #include "ctk/dynamic-array.h"
 #include "ctk/pool.h"
 #include <stddef.h>

@@ -1,5 +1,5 @@
-#include "file-parser.h"
-#include "parser.h"
+#include "frontend/file-parser.h"
+#include "frontend/parser.h"
 #include <assert.h>
 
 static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser);

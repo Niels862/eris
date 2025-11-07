@@ -1,4 +1,4 @@
-#include "virtual-machine.h"
+#include "runtime/virtual-machine.h"
 #include "instruction.h"
 #include <stdio.h>
 #include <stdint.h>

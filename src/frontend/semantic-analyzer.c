@@ -1,4 +1,4 @@
-#include "semantic-analyzer.h"
+#include "frontend/semantic-analyzer.h"
 
 typedef struct eris_analyzer_t eris_analyzer_t;
 

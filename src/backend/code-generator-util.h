@@ -1,9 +1,9 @@
 #ifndef CODE_GENERATOR_UTIL_H
 #define CODE_GENERATOR_UTIL_H
 
-#include "code-generator.h"
-#include "instruction.h"
-#include "constant-table.h"
+#include "backend/code-generator.h"
+#include "runtime/instruction.h"
+#include "runtime/constant-table.h"
 #include "ctk/dynamic-array.h"
 #include "ctk/list.h"
 #include <string.h>

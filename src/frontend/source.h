@@ -1,8 +1,8 @@
 #ifndef ERIS_SOURCE_H
 #define ERIS_SOURCE_H
 
-#include "ast.h"
-#include "module.h"
+#include "frontend/ast.h"
+#include "runtime/module.h"
 #include "ctk/text-source.h"
 #include "ctk/token-list.h"
 

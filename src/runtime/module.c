@@ -1,5 +1,5 @@
-#include "module.h"
-#include "constant-table.h"
+#include "runtime/module.h"
+#include "runtime/constant-table.h"
 #include "ctk/allocator.h"
 
 void eris_module_init_empty(eris_module_t *mod) {

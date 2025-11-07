@@ -1,4 +1,4 @@
-#include "instruction.h"
+#include "runtime/instruction.h"
 #include <stdio.h>
 
 #define ERIS_FORMAT_SIZE_NONE       1

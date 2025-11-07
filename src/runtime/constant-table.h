@@ -1,7 +1,7 @@
 #ifndef ERIS_CONSTANT_TABLE_H
 #define ERIS_CONSTANT_TABLE_H
 
-#include "instruction.h"
+#include "runtime/instruction.h"
 #include <stdint.h>
 
 typedef enum {
