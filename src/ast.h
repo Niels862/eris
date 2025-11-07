@@ -13,6 +13,7 @@
         X(EXPR, node_expr) \
         X(TYPE, node_type) \
         X(DECL, node_decl) \
+        X(SKEL, node_skel) \
         X(SOURCE, node_source) \
         X(FUNCTION_DECL, node_function_decl) \
         X(EXPR_STMT, node_expr_stmt) \
@@ -51,6 +52,12 @@ typedef struct {
 } eris_node_decl_t;
 
 typedef struct {
+    eris_node_stmt_t stmt;
+    ctk_span_t toks;
+    eris_node_stmt_t **stmts;
+} eris_node_skel_t;
+
+typedef struct {
     eris_node_t node;
     eris_node_stmt_t **stmts;
 } eris_node_source_t;
@@ -83,7 +90,10 @@ typedef struct {
     ctk_token_t *name;
 } eris_node_named_type_t;
 
-eris_node_source_t *eris_node_source_new(ctk_list_t *decls);
+eris_node_source_t *eris_node_source_new(ctk_list_t *stmts);
+
+eris_node_stmt_t *eris_node_skel_new(ctk_span_t *toks, 
+                                     eris_node_stmt_t **stmts);
 
 eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name, 
                                               eris_node_type_t *rettype,

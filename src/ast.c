@@ -43,6 +43,15 @@ static ctk_rtti_t eris_node_source_rtti = {
     )
 };
 
+static ctk_rtti_t eris_node_skel_rtti = {
+    .super = &eris_node_stmt_rtti,
+    .name = "node-skeleton",
+    .id = CTK_NODE_SKEL,
+    .attrs = CTK_RTTI_ATTR_LIST(
+        CTK_RTTI_ATTR(eris_node_skel_t, stmts, CTK_TYPE_RTTI_LIST)
+    )
+};
+
 static ctk_rtti_t eris_node_function_decl_rtti = {
     .super = &eris_node_decl_rtti,
     .name = "node-function-decl",
@@ -105,7 +114,7 @@ static void eris_node_expr_init(eris_node_expr_t *node, ctk_rtti_t *meta) {
     assert(eris_node_expr_instanceof(node));
 }
 
-/*static*/ void eris_node_type_init(eris_node_type_t *node, ctk_rtti_t *meta) {
+static void eris_node_type_init(eris_node_type_t *node, ctk_rtti_t *meta) {
     eris_node_init(&node->node, meta);
     assert(eris_node_type_instanceof(node));
 }
@@ -117,13 +126,24 @@ static void eris_node_decl_init(eris_node_decl_t *node, ctk_token_t *name,
     node->name = name;
 }
 
-eris_node_source_t *eris_node_source_new(ctk_list_t *decls) {
+eris_node_source_t *eris_node_source_new(ctk_list_t *stmts) {
     eris_node_source_t *node = eris_node_source_xalloc();
 
     eris_node_init(&node->node, &eris_node_source_rtti);
-    node->stmts = (eris_node_stmt_t **)ctk_list_move(decls);
+    node->stmts = (eris_node_stmt_t **)ctk_list_move(stmts);
 
     return node;
+}
+
+eris_node_stmt_t *eris_node_skel_new(ctk_span_t *toks, 
+                                     eris_node_stmt_t **stmts) {
+    eris_node_skel_t *node = eris_node_skel_xalloc();
+
+    eris_node_stmt_init(&node->stmt, &eris_node_skel_rtti);
+    node->toks = *toks;
+    node->stmts = stmts;
+
+    return &node->stmt;
 }
 
 eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name, 

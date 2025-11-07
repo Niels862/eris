@@ -1,10 +1,10 @@
-function main() -> int {
-    a: int = 5;
-    b: int = 8;
+{
+    {
+        a b c {} a b c {} a
+    } 
+}
+{}
+{}
 
-    if a < b {
-        return 0;
-    }
-
-    return 1;
+a
 }

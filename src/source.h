@@ -20,6 +20,9 @@ void eris_codesrc_destruct(eris_codesrc_t *csrc);
 
 void eris_codesrc_lex(eris_codesrc_t *csrc);
 
+void eris_codesrc_parse_structure(eris_codesrc_t *csrc);
+
+//@deprecated
 void eris_codesrc_parse_file(eris_codesrc_t *csrc);
 
 void eris_codesrc_generate(eris_codesrc_t *csrc);
