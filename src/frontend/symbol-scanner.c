@@ -1,5 +1,6 @@
 #include "frontend/symbol-scanner.h"
-#include "frontend//parser.h"
+#include "frontend/symbol.h"
+#include "frontend/parser.h"
 #include "frontend/token.h"
 #include "ctk/token.h"
 
@@ -21,14 +22,14 @@ void eris_scan_class_declaration(ctk_parser_t *p, eris_scopelist_t *scopes) {
         return;
     }
 
-    /* Temporarily insert `1` instead of NULL to check for previous insertion,
-       which would otherwise be NULL as well. */
-    void *prev = ctk_linmap_insert(&scopes->syms->map, &id->lexeme, (void *)1);
-    if (prev != NULL) {
-        fprintf(stderr, "duplicate symbol error: '%.*s'\n", (int)(id->lexeme.end - id->lexeme.start), id->lexeme.start);
-        // TODO: duplicate symbol error
+    eris_sym_t *sym = ctk_xmalloc(sizeof(eris_sym_t));
+    sym->meta = NULL;
+    sym->name = id;
+
+    if (eris_symtable_declare(scopes->syms, sym)) {
+        fprintf(stderr, "declared symbol '%.*s'\n", (int)(id->lexeme.end - id->lexeme.start), id->lexeme.start);
     } else {
-        fprintf(stderr, "declared symbol '%.*s' (prev = %p)\n", (int)(id->lexeme.end - id->lexeme.start), id->lexeme.start, prev);
+        fprintf(stderr, "duplicate symbol error: '%.*s'\n", (int)(id->lexeme.end - id->lexeme.start), id->lexeme.start);
     }
 }
 

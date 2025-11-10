@@ -1,6 +1,7 @@
 #ifndef ERIS_SYMBOL_TABLE_H
 #define ERIS_SYMBOL_TABLE_H
 
+#include "frontend/symbol.h"
 #include "ctk/map.h"
 #include "ctk/list.h"
 #include "ctk/string-span.h"
@@ -23,6 +24,10 @@ void eris_symtable_init(eris_symtable_t *syms);
 void eris_symtable_destruct(eris_symtable_t *syms);
 
 void eris_symtable_write(eris_symtable_t *syms);
+
+bool eris_symtable_declare(eris_symtable_t *syms, eris_sym_t *sym);
+
+eris_sym_t *eris_symtable_lookup(eris_symtable_t *syms, ctk_span_t *id);
 
 void eris_scopelist_init(eris_scopelist_t *scopes);
 

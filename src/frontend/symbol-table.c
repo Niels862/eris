@@ -1,5 +1,6 @@
 #include "frontend/symbol-table.h"
 #include "ctk/allocator.h"
+#include "ctk/token.h"
 #include <string.h>
 #include <assert.h>
 
@@ -38,12 +39,42 @@ void eris_symtable_write(eris_symtable_t *syms) {
     ctk_linmap_iter_init(&iter, &syms->map);
 
     while (!ctk_linmap_iter_at_end(&iter)) {
-        ctk_strspan_t *span = iter.entry.key;
-        fprintf(stderr, "  %.*s: %p\n", (int)(span->end - span->start), span->start, iter.entry.val);
+        ctk_strspan_t *id = iter.entry.key;
+        eris_sym_t *sym = iter.entry.val;
+
+        fprintf(stderr, "  %.*s: ", (int)(id->end - id->start), id->start);
+        ctk_token_write(sym->name, stderr);
+        fprintf(stderr, "\n");
+
         ctk_linmap_iter_next(&iter);
     }
 
     fprintf(stderr, "}\n");
+}
+
+bool eris_symtable_declare(eris_symtable_t *syms, eris_sym_t *sym) {
+    ctk_strspan_t *id = &sym->name->lexeme;
+
+    eris_sym_t *prev = ctk_linmap_insert(&syms->map, id, sym);
+    if (prev != NULL) {
+        // todo error
+        return false;
+    }
+
+    return true;
+}
+
+eris_sym_t *eris_symtable_lookup(eris_symtable_t *syms, ctk_span_t *id) {
+    while (syms != NULL) {
+        eris_sym_t *sym = ctk_linmap_lookup(&syms->map, id);
+        if (sym != NULL) {
+            return sym;
+        }
+
+        syms = syms->enclosing;
+    }
+
+    return NULL;
 }
 
 void eris_scopelist_init(eris_scopelist_t *scopes) {

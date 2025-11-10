@@ -20,7 +20,7 @@ typedef enum {
 
 typedef struct {
     ctk_rtti_t *meta;
-    eris_node_decl_t *decl;
+    ctk_token_t *name;
 } eris_sym_t;
 
 typedef struct {
