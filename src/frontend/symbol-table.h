@@ -22,9 +22,13 @@ void eris_symtable_init(eris_symtable_t *syms);
 
 void eris_symtable_destruct(eris_symtable_t *syms);
 
+void eris_symtable_write(eris_symtable_t *syms);
+
 void eris_scopelist_init(eris_scopelist_t *scopes);
 
 void eris_scopelist_destruct(eris_scopelist_t *scopes);
+
+void eris_scopelist_write(eris_scopelist_t *scopes);
 
 eris_symtable_t *eris_scopelist_push(eris_scopelist_t *scopes);
 

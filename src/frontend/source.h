@@ -1,6 +1,7 @@
 #ifndef ERIS_SOURCE_H
 #define ERIS_SOURCE_H
 
+#include "frontend/symbol-table.h"
 #include "frontend/ast.h"
 #include "runtime/module.h"
 #include "ctk/text-source.h"
@@ -9,6 +10,7 @@
 typedef struct {
     ctk_textsrc_t textsrc;
     ctk_tokenlist_t toks;
+    eris_scopelist_t scopes;
     eris_node_source_t *root;
     eris_module_t *mod;
 } eris_codesrc_t;

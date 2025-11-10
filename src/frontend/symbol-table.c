@@ -15,7 +15,7 @@ static bool eris_strspan_is_equal(void *p1, void *p2) {
         return false;
     }
 
-    return strncmp(span1->start, span2->start, span1->end - span1->start);
+    return strncmp(span1->start, span2->start, span1->end - span1->start) == 0;
 }
 
 void eris_symtable_init(eris_symtable_t *syms) {
@@ -31,6 +31,21 @@ void eris_symtable_destruct(eris_symtable_t *syms) {
     ctk_linmap_destruct(&syms->map);
 }
 
+void eris_symtable_write(eris_symtable_t *syms) {
+    fprintf(stderr, "{\n");
+
+    ctk_linmap_iter_t iter;
+    ctk_linmap_iter_init(&iter, &syms->map);
+
+    while (!ctk_linmap_iter_at_end(&iter)) {
+        ctk_strspan_t *span = iter.entry.key;
+        fprintf(stderr, "  %.*s: %p\n", (int)(span->end - span->start), span->start, iter.entry.val);
+        ctk_linmap_iter_next(&iter);
+    }
+
+    fprintf(stderr, "}\n");
+}
+
 void eris_scopelist_init(eris_scopelist_t *scopes) {
     ctk_list_init(&scopes->list, 8);
     scopes->idx = 0;
@@ -38,8 +53,17 @@ void eris_scopelist_init(eris_scopelist_t *scopes) {
 }
 
 void eris_scopelist_destruct(eris_scopelist_t *scopes) {
-    for (size_t i = 0; i < scopes->list.size; i++) {
+    for (size_t i = 0; i < ctk_list_size(&scopes->list); i++) {
         (void)i; // TODO: free each list
+    }
+}
+
+void eris_scopelist_write(eris_scopelist_t *scopes) {
+    for (size_t i = 0; i < ctk_list_size(&scopes->list); i++) {
+        eris_symtable_t *syms = ((eris_symtable_t **)scopes->list.data)[i];
+
+        fprintf(stderr, "%p encloses %p ", (void *)syms, (void *)syms->enclosing);
+        eris_symtable_write(syms);
     }
 }
 

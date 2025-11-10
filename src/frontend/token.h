@@ -20,7 +20,8 @@
         X(RETURN, "'return'", "return") \
         X(IF, "'if'", "if") \
         X(ELSE, "'else'", "else") \
-        X(WHILE, "'while'", "while")
+        X(WHILE, "'while'", "while") \
+        X(CLASS, "'class'", "class")
 
 #define ERIS_TOKENS_OPERATOR(X) \
         X(ARROW, "'->'", "->") \

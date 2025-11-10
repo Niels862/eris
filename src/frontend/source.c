@@ -1,5 +1,6 @@
 #include "frontend/source.h"
 #include "frontend/lexer.h"
+#include "frontend/symbol-scanner.h"
 #include "frontend/file-parser.h"
 #include "backend/code-generator.h"
 #include "runtime/instruction.h"
@@ -9,12 +10,14 @@ void eris_codesrc_init(eris_codesrc_t *csrc, ctk_zstr_t filename, FILE *file,
                        eris_module_t *mod) {
     ctk_textsrc_init_file(&csrc->textsrc, filename, file);
     ctk_tokenlist_init(&csrc->toks);
+    eris_scopelist_init(&csrc->scopes);
     csrc->root = NULL;
     csrc->mod = mod;
 }
 
 void eris_codesrc_destruct(eris_codesrc_t *csrc) {
     ctk_rtti_delete(csrc->root);
+    eris_scopelist_destruct(&csrc->scopes);
     ctk_tokenlist_destruct(&csrc->toks);
     ctk_textsrc_destruct(&csrc->textsrc);
 }
@@ -37,6 +40,8 @@ void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
     ctk_span_init(&span, 
                   &csrc->toks.data[1], 
                   &csrc->toks.data[csrc->toks.size - 2]);
+
+    eris_scan_symbols(&span, &csrc->scopes);
 
     csrc->root = eris_parse_file(&span);
 
