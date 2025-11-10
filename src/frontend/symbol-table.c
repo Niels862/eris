@@ -1,0 +1,1 @@
+#include "frontend/symbol-table.h"

@@ -43,15 +43,6 @@ static ctk_rtti_t eris_node_source_rtti = {
     )
 };
 
-static ctk_rtti_t eris_node_skel_rtti = {
-    .super = &eris_node_stmt_rtti,
-    .name = "node-skeleton",
-    .id = CTK_NODE_SKEL,
-    .attrs = CTK_RTTI_ATTR_LIST(
-        CTK_RTTI_ATTR(eris_node_skel_t, stmts, CTK_TYPE_RTTI_LIST)
-    )
-};
-
 static ctk_rtti_t eris_node_function_decl_rtti = {
     .super = &eris_node_decl_rtti,
     .name = "node-function-decl",
@@ -133,17 +124,6 @@ eris_node_source_t *eris_node_source_new(ctk_list_t *stmts) {
     node->stmts = (eris_node_stmt_t **)ctk_list_move(stmts);
 
     return node;
-}
-
-eris_node_stmt_t *eris_node_skel_new(ctk_span_t *toks, 
-                                     eris_node_stmt_t **stmts) {
-    eris_node_skel_t *node = eris_node_skel_xalloc();
-
-    eris_node_stmt_init(&node->stmt, &eris_node_skel_rtti);
-    node->toks = *toks;
-    node->stmts = stmts;
-
-    return &node->stmt;
 }
 
 eris_node_decl_t *eris_node_function_decl_new(ctk_token_t *name, 

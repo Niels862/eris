@@ -1,7 +1,6 @@
 #include "frontend/source.h"
 #include "frontend/lexer.h"
 #include "frontend/file-parser.h"
-#include "frontend/structural-parser.h"
 #include "backend/code-generator.h"
 #include "runtime/instruction.h"
 #include "runtime/constant-table.h"
@@ -30,18 +29,6 @@ void eris_codesrc_lex(eris_codesrc_t *csrc) {
         fprintf(stderr, "\n");
     }
     fprintf(stderr, "\n");
-}
-
-void eris_codesrc_parse_structure(eris_codesrc_t *csrc) {
-    ctk_span_t span;
-    ctk_span_init(&span, 
-                  &csrc->toks.data[1], 
-                  &csrc->toks.data[csrc->toks.size - 2]);
-
-    csrc->root = eris_parse_structure(&span);
-
-    ctk_rtti_write(csrc->root, 0, stderr);
-    fprintf(stderr, "\n\n");
 }
 
 void eris_codesrc_parse_file(eris_codesrc_t *csrc) {

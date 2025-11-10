@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
     fclose(file);
 
     eris_codesrc_lex(&csrc);
-    eris_codesrc_parse_structure(&csrc);
     eris_codesrc_parse_file(&csrc);
     eris_codesrc_generate(&csrc);
 
