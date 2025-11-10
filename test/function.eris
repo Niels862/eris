@@ -1,9 +1,7 @@
-function test() {
-    69;
-    return 42;
-}
+class int {}
 
-function main() -> int {
-    0;
+int main() {
+    class Inner {}
+
     return 0;
 }
