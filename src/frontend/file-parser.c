@@ -221,7 +221,7 @@ eris_node_source_t *eris_parse_file(ctk_span_t *span,
     (void)scopes;
     
     eris_parser_t p;
-    eris_parser_init(&p, span);
+    eris_parser_init(&p, span, NULL);
 
     ctk_list_t decls;
     ctk_list_init(&decls, 4);

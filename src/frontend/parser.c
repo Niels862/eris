@@ -33,6 +33,8 @@ static void eris_parser_expect_error_function(ctk_token_t *got,
     ctk_textctx_write(&writer);
 }
 
-void eris_parser_init(eris_parser_t *p, ctk_span_t *span) {
+void eris_parser_init(eris_parser_t *p, ctk_span_t *span, 
+                      eris_scopelist_t *scopes) {
     ctk_parser_init(&p->base, span, &eris_parser_expect_error_function);
+    p->scopes = scopes;
 }

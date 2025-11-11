@@ -2,13 +2,16 @@
 #define ERIS_PARSER_H
 
 #include "frontend/token.h"
+#include "frontend/symbol-table.h"
 #include "ctk/parser.h"
 
 typedef struct {
     ctk_parser_t base;
+    eris_scopelist_t *scopes;
 } eris_parser_t;
 
-void eris_parser_init(eris_parser_t *parser, ctk_span_t *span);
+void eris_parser_init(eris_parser_t *parser, ctk_span_t *span, 
+                      eris_scopelist_t *scopes);
 
 static inline ctk_token_t *eris_parser_accept(eris_parser_t *p, 
                                               eris_tokenkind_t kind) {
