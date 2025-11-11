@@ -4,8 +4,8 @@
 #include "ctk/text-context-writer.h"
 #include <assert.h>
 
-static void eris_parser_expect_error(ctk_token_t *got, 
-                                     int expected, char const *msg) {
+static void eris_parser_expect_error_function(ctk_token_t *got, 
+                                              int expected, char const *msg) {
     assert(got != NULL); // May not be called on synthetic NONE token
     assert(got->kind != 0);
     assert(expected != 0 || msg != NULL);
@@ -33,6 +33,6 @@ static void eris_parser_expect_error(ctk_token_t *got,
     ctk_textctx_write(&writer);
 }
 
-void eris_parser_init(eris_parser_t *parser, ctk_span_t *span) {
-    ctk_parser_init(parser, span, &eris_parser_expect_error);
+void eris_parser_init(eris_parser_t *p, ctk_span_t *span) {
+    ctk_parser_init(&p->base, span, &eris_parser_expect_error_function);
 }

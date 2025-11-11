@@ -2,17 +2,17 @@
 #include "frontend/parser.h"
 #include <assert.h>
 
-static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser);
+static eris_node_expr_t *eris_parse_expr(eris_parser_t *p);
 
-static eris_node_type_t *eris_parse_type(ctk_parser_t *parser) {
-    ctk_token_t *curr = parser->curr;
+static eris_node_type_t *eris_parse_type(eris_parser_t *p) {
+    ctk_token_t *curr = eris_parser_curr(p);
 
-    ctk_token_t *name = ctk_parser_accept(parser, ERIS_TOKEN_IDENTIFIER);
+    ctk_token_t *name = eris_parser_accept(p, ERIS_TOKEN_IDENTIFIER);
     if (name != NULL) {
         return eris_node_named_type_new(name);
     }
 
-    parser->expect_error(curr, 0, "expected type");
+    eris_parser_expect_error(p, curr, 0, "expected type");
     return NULL;
 }
 
@@ -27,28 +27,28 @@ static int64_t eris_parse_number(ctk_token_t *num) {
     return s64;
 }
 
-static eris_node_expr_t *eris_parse_atom(eris_parser_t *parser) {
+static eris_node_expr_t *eris_parse_atom(eris_parser_t *p) {
     eris_node_expr_t *expr = NULL;
-    ctk_token_t *curr = parser->curr;
+    ctk_token_t *curr = eris_parser_curr(p);
 
     switch (curr->kind) {
         case ERIS_TOKEN_NUMBER: {
-            ctk_parser_advance(parser);
+            eris_parser_advance(p);
             expr = eris_node_intlit_new(curr, eris_parse_number(curr));
             break;
         }
 
         case ERIS_TOKEN_LPAREN: {
-            ctk_parser_advance(parser);
-            expr = eris_parse_expr(parser);
-            if (!ctk_parser_expect(parser, ERIS_TOKEN_RPAREN, NULL)) {
+            eris_parser_advance(p);
+            expr = eris_parse_expr(p);
+            if (!eris_parser_expect(p, ERIS_TOKEN_RPAREN, NULL)) {
                 goto error;
             }
             break;
         }
 
         default: {
-            parser->expect_error(curr, 0, "expected value");
+            eris_parser_expect_error(p, curr, 0, "expected value");
             goto error;
         }
     }
@@ -59,24 +59,24 @@ error:
     return NULL;
 }
 
-static eris_node_expr_t *eris_parse_expr(eris_parser_t *parser) {
-    return eris_parse_atom(parser);
+static eris_node_expr_t *eris_parse_expr(eris_parser_t *p) {
+    return eris_parse_atom(p);
 }
 
-static eris_node_stmt_t *eris_parse_return(eris_parser_t *parser) {
+static eris_node_stmt_t *eris_parse_return(eris_parser_t *p) {
     eris_node_expr_t *value = NULL;
     
-    ctk_token_t *token = ctk_parser_expect(parser, ERIS_TOKEN_RETURN, NULL);
+    ctk_token_t *token = eris_parser_expect(p, ERIS_TOKEN_RETURN, NULL);
     if (token == NULL) {
         goto error;
     }
 
-    value = eris_parse_expr(parser);
+    value = eris_parse_expr(p);
     if (value == NULL) {
         goto error;
     }
 
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_SEMICOLON, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_SEMICOLON, NULL)) {
         goto error;
     }
 
@@ -87,13 +87,13 @@ error:
     return NULL;
 }
 
-static eris_node_stmt_t *eris_parse_expr_stmt(eris_parser_t *parser) {
-    eris_node_expr_t *expr = eris_parse_expr(parser);
+static eris_node_stmt_t *eris_parse_expr_stmt(eris_parser_t *p) {
+    eris_node_expr_t *expr = eris_parse_expr(p);
     if (expr == NULL) {
         goto error;
     }
 
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_SEMICOLON, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_SEMICOLON, NULL)) {
         goto error;
     }
     
@@ -104,45 +104,45 @@ error:
     return NULL;
 }
 
-static eris_node_stmt_t *eris_parse_stmt(eris_parser_t *parser) {
-    switch (ctk_parser_curr(parser)->kind) {
+static eris_node_stmt_t *eris_parse_stmt(eris_parser_t *p) {
+    switch (eris_parser_curr(p)->kind) {
         case ERIS_TOKEN_RETURN:     
-            return eris_parse_return(parser);
+            return eris_parse_return(p);
 
         default:                    
-            return eris_parse_expr_stmt(parser);
+            return eris_parse_expr_stmt(p);
     }
 }
 
-static eris_node_stmt_t **eris_parse_stmt_body(eris_parser_t *parser) {
+static eris_node_stmt_t **eris_parse_stmt_body(eris_parser_t *p) {
     ctk_list_t stmts;
     ctk_list_init(&stmts, 4);
 
     eris_node_stmt_t *stmt = NULL;
 
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_LBRACE, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_LBRACE, NULL)) {
         goto error;
     }
 
     bool has_error = false;
-    while (ctk_parser_curr(parser)->kind != ERIS_TOKEN_RBRACE) {
-        eris_node_stmt_t *stmt = eris_parse_stmt(parser);
+    while (eris_parser_curr(p)->kind != ERIS_TOKEN_RBRACE) {
+        eris_node_stmt_t *stmt = eris_parse_stmt(p);
         if (stmt == NULL) {
             has_error = true;
 
-            if (ctk_parser_curr(parser)->kind != ERIS_TOKEN_RBRACE) {
-                ctk_parser_advance(parser);
+            if (eris_parser_curr(p)->kind != ERIS_TOKEN_RBRACE) {
+                eris_parser_advance(p);
             }
         } else {
             ctk_list_add(&stmts, stmt);
             stmt = NULL;
         }
 
-        if (ctk_parser_at_end(parser)) {
+        if (eris_parser_at_end(p)) {
             // Temporary bypass. parser_get_curr should be configurable to 
             // either keep repeating the final token or to return NONE
-            ctk_token_t *curr = parser->curr;
-            parser->expect_error(curr, ERIS_TOKEN_RBRACE, NULL);
+            ctk_token_t *curr = eris_parser_curr(p);
+            eris_parser_expect_error(p, curr, ERIS_TOKEN_RBRACE, NULL);
             
             goto error;
         }
@@ -151,7 +151,7 @@ static eris_node_stmt_t **eris_parse_stmt_body(eris_parser_t *parser) {
     if (has_error) {
         goto error;
     } else {
-        ctk_parser_expect(parser, ERIS_TOKEN_RBRACE, "expected '}");
+        eris_parser_expect(p, ERIS_TOKEN_RBRACE, "expected '}");
     }
 
     return (eris_node_stmt_t **)ctk_list_move(&stmts);
@@ -162,35 +162,35 @@ error:
     return NULL;
 }
 
-static eris_node_decl_t *eris_parse_function_decl(eris_parser_t *parser) {
+static eris_node_decl_t *eris_parse_function_decl(eris_parser_t *p) {
     eris_node_type_t *rettype = NULL;
     eris_node_stmt_t **stmts = NULL;
     
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_FUNCTION, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_FUNCTION, NULL)) {
         goto error;
     }
 
-    ctk_token_t *name = ctk_parser_expect(parser, ERIS_TOKEN_IDENTIFIER, NULL);
+    ctk_token_t *name = eris_parser_expect(p, ERIS_TOKEN_IDENTIFIER, NULL);
     if (name == NULL) {
         goto error;
     }
 
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_LPAREN, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_LPAREN, NULL)) {
         goto error;
     }
     
-    if (!ctk_parser_expect(parser, ERIS_TOKEN_RPAREN, NULL)) {
+    if (!eris_parser_expect(p, ERIS_TOKEN_RPAREN, NULL)) {
         goto error;
     }
 
-    if (ctk_parser_accept(parser, ERIS_TOKEN_ARROW)) {
-        rettype = eris_parse_type(parser);
+    if (eris_parser_accept(p, ERIS_TOKEN_ARROW)) {
+        rettype = eris_parse_type(p);
         if (rettype == NULL) {
             goto error;
         }
     }
 
-    stmts = eris_parse_stmt_body(parser);
+    stmts = eris_parse_stmt_body(p);
     if (stmts == NULL) {
         goto error;
     }
@@ -203,33 +203,36 @@ error:
     return NULL;
 }
 
-static eris_node_decl_t *eris_parse_decl(eris_parser_t *parser) {
-    ctk_token_t *curr = ctk_parser_curr(parser);
+static eris_node_decl_t *eris_parse_decl(eris_parser_t *p) {
+    ctk_token_t *curr = eris_parser_curr(p);
 
     switch (curr->kind) {
         case ERIS_TOKEN_FUNCTION:
-            return eris_parse_function_decl(parser);
+            return eris_parse_function_decl(p);
         
         default:
-            parser->expect_error(curr, 0, "expected declaration");
+            eris_parser_expect_error(p, curr, 0, "expected declaration");
             return NULL;
     } 
 }
 
-eris_node_source_t *eris_parse_file(ctk_span_t *span) {
-    eris_parser_t parser;
-    eris_parser_init(&parser, span);
+eris_node_source_t *eris_parse_file(ctk_span_t *span, 
+                                    eris_scopelist_t *scopes) {
+    (void)scopes;
+    
+    eris_parser_t p;
+    eris_parser_init(&p, span);
 
     ctk_list_t decls;
     ctk_list_init(&decls, 4);
 
     bool has_error = false;
-    while (!ctk_parser_at_end(&parser)) {
-        eris_node_decl_t *decl = eris_parse_decl(&parser);
+    while (!eris_parser_at_end(&p)) {
+        eris_node_decl_t *decl = eris_parse_decl(&p);
 
         if (decl == NULL) {
             has_error = true;
-            ctk_parser_advance(&parser);
+            eris_parser_advance(&p);
         } else {
             ctk_list_add(&decls, decl);
         }

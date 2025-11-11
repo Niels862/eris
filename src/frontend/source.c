@@ -43,7 +43,7 @@ void eris_codesrc_parse_file(eris_codesrc_t *csrc) {
 
     eris_scan_symbols(&span, &csrc->scopes);
 
-    csrc->root = eris_parse_file(&span);
+    csrc->root = eris_parse_file(&span, &csrc->scopes);
 
     ctk_rtti_write(csrc->root, 0, stderr);
     fprintf(stderr, "\n\n");

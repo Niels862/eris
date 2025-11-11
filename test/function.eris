@@ -1,8 +1,5 @@
-class int {}
-class int {}
-
 int main() {
-    class Inner {}
-
     return 0;
 }
+
+class int { }
