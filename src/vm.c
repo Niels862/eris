@@ -13,9 +13,17 @@ typedef union {
 } er_value_t;
 
 typedef struct {
+    size_t bp;
+} er_callframe_t;
+
+typedef struct {
     er_value_t *stack;
     size_t stacksize;
     size_t sp;
+
+    er_callframe_t *frames;
+    size_t framescap;
+    size_t fp;
 
     uint8_t const *code;
     size_t ip;
