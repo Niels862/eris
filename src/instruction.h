@@ -3,7 +3,8 @@
 
 #define ER_OPCODES(X) \
     X(NONE) \
-    X(IPUSH_S16) \
+    X(ILOAD_S16) \
+    X(ILOAD_CONST) \
     X(IADD) \
     X(IPRINT) \
     X(HALT)

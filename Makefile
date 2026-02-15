@@ -16,8 +16,8 @@ else
   $(error Unknown build mode '$(MODE)'; use MODE=release or MODE=debug)
 endif
 
-CCFLAGS += # -Wall -Wextra -Werror -pedantic -std=$(CCSTD)
-CFLAGS  := -MMD -MP -I$(CTK_INCLUDE) -I$(INC_DIR)
+CCFLAGS += -Wall -Wextra -Werror -pedantic -std=$(CCSTD)
+CFLAGS  := -MMD -MP -I$(INC_DIR)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.c')
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
