@@ -1,7 +1,8 @@
-#include "vm.h"
-#include "instruction.h"
-#include "consttable.h"
-#include "util.h"
+#include "runtime/vm.h"
+#include "module/instr.h"
+#include "module/const.h"
+#include "util/alloc.h"
+#include "util/error.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -77,51 +78,81 @@ ER_OPCODE_HANDLER(NONE) {
     ER_UNUSED(vm);
 }
 
-ER_OPCODE_HANDLER(ILOAD_S16) {
-    assert(vm->sp < vm->stackcap);
-
-    int16_t arg = er_read_u16_arg(vm);
-    vm->stack[vm->sp].s64 = arg;
-    vm->stacktags[vm->sp] = ER_S64;
-    vm->sp++;
+ER_OPCODE_HANDLER(LOAD_LOCAL)  {
+    ER_UNUSED(vm);
 }
 
-ER_OPCODE_HANDLER(ILOAD_CONST) {
-    uint16_t arg = er_read_u16_arg(vm);
-    assert(arg < vm->nconsts);
-
-    er_const_t *c = vm->consttab[arg];
-    assert(c->tag == ER_CONST_S64);
-
-    vm->stack[vm->sp].s64 = ((er_const_s64_t *)c)->s64;
-    vm->stacktags[vm->sp] = ER_S64;
-    vm->sp++;
+ER_OPCODE_HANDLER(STORE_LOCAL)  {
+    ER_UNUSED(vm);
 }
 
-ER_OPCODE_HANDLER(IADD) {
-    assert(vm->sp >= 2);
-    assert(vm->stacktags[vm->sp - 1] == ER_S64);
-    assert(vm->stacktags[vm->sp - 2] == ER_S64);
-
-    vm->sp--;
-    vm->stack[vm->sp - 1].s64 += vm->stack[vm->sp].s64;
+ER_OPCODE_HANDLER(LOAD_NULL)  {
+    ER_UNUSED(vm);
 }
 
-ER_OPCODE_HANDLER(IPRINT) {
-    assert(vm->sp >= 1);
-    assert(vm->stacktags[vm->sp - 1] == ER_S64);
-
-    vm->sp--;
-    printf("[VM]: %" PRId64 "\n", vm->stack[vm->sp].s64);
+ER_OPCODE_HANDLER(LOAD_TRUE)  {
+    ER_UNUSED(vm);
 }
 
-ER_OPCODE_HANDLER(HALT) {
-    vm->halt = true;
+ER_OPCODE_HANDLER(LOAD_FALSE)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(LOAD_CONST)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(POP)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(DUP_TOP)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(INVOKE)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(RETURN)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(ASSERT)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(JUMP_IF_TRUE)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(JUMP_IF_FALSE)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(JUMP)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(IADD)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(ISUB)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(EQUALS)  {
+    ER_UNUSED(vm);
+}
+
+ER_OPCODE_HANDLER(NOT_EQUALS)  {
+    ER_UNUSED(vm);
 }
 
 static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
     switch (opc) {
-        #define X(n) case ER_OPC_##n: er_##n(vm); break;
+        #define X(n, f) case ER_OPC_##n: er_##n(vm); break;
         ER_OPCODES(X);
         #undef X
         
@@ -142,11 +173,7 @@ void er_run(void) {
     };
 
     static uint8_t const code[] = {
-        ER_OPC_ILOAD_CONST, 0, 0,
-        ER_OPC_ILOAD_S16, 0, 9,
-        ER_OPC_IADD,
-        ER_OPC_IPRINT,
-        ER_OPC_HALT,
+        0,
     };
 
     er_vm_t vm;

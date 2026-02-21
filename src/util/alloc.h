@@ -1,10 +1,7 @@
-#ifndef ER_UTIL_H
-#define ER_UTIL_H
+#ifndef ER_UTIL_ALLOC_H
+#define ER_UTIL_ALLOC_H
 
 #include <stddef.h>
-
-#define ER_UNUSED(v) (void)v
-#define ER_MAYBE_UNUSED(v) (void)v
 
 void *er_xmalloc(size_t size);
 

@@ -1,11 +1,12 @@
-#ifndef ER_CONSTTABLE_H
-#define ER_CONSTTABLE_H
+#ifndef ER_MODULE_CONST_H
+#define ER_MODULE_CONST_H
 
 #include <stdint.h>
 
 typedef enum {
     ER_CONST_S64,
     ER_CONST_STR,
+    ER_CONST_MODREF,
     ER_CONST_FUNCREF,
 } er_consttag_t;
 
@@ -26,6 +27,11 @@ typedef struct {
     uint16_t size;
     char str[];
 } er_const_str_t;
+
+typedef struct {
+    ER_CONST_HEADER;
+    uint16_t nameidx;
+} er_const_modref_t;
 
 typedef struct {
     ER_CONST_HEADER;

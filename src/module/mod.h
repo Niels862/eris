@@ -1,7 +1,7 @@
-#ifndef ER_MODULE_H
-#define ER_MODULE_H
+#ifndef ERIS_MODULE_MOD_H
+#define ERIS_MODULE_MOD_H
 
-#include "consttable.h"
+#include "module/const.h"
 #include <stddef.h>
 #include <stdint.h>
 
