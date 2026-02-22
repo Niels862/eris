@@ -1,5 +1,6 @@
 #include "token.h"
 #include <stddef.h>
+#include <inttypes.h>
 
 #define X(n, l) [ER_TOK_##n] = #n,
 static char const * const er_tokkind_names[] = {
@@ -18,5 +19,8 @@ char const *er_tokkind_name(er_tokkind_t kind) {
 }
 
 void er_tok_print(er_tok_t *tok, FILE *file) {
-    fprintf(file, "[%s]\n", er_tokkind_name(tok->kind));
+    fprintf(file, "%" PRId16 ":%" PRId16 ": <%s> %.*s\n", 
+            tok->pos.line, tok->pos.col,
+            er_tokkind_name(tok->kind),
+            tok->text.len, tok->text.data);
 }

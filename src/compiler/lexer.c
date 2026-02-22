@@ -26,6 +26,7 @@ static size_t const er_n_special_tokens
 
 typedef struct {
     size_t at;
+    er_textpos_t pos;
 } er_lexstate_t;
 
 typedef struct {
@@ -48,7 +49,28 @@ void er_lex_emit(er_lexctx_t *ctx, er_tokkind_t kind) {
     }
 
     er_tok_t *tok = &ctx->toks[ctx->toks_size++];
+
     tok->kind = kind;
+    tok->text.data = ctx->text + ctx->base.at;
+    tok->text.len = ctx->curr.at - ctx->base.at;
+    tok->pos = ctx->base.pos;
+
+    ctx->base = ctx->curr;
+}
+
+static void er_lex_discard(er_lexctx_t *ctx) {
+    ctx->base = ctx->curr;
+}
+
+static inline char er_lex_next(er_lexctx_t *ctx) {
+    if (ctx->text[ctx->curr.at] == '\n') {
+        ctx->curr.pos.line++;
+        ctx->curr.pos.col = 1;
+    } else {
+        ctx->curr.pos.col++;
+    }
+
+    return ctx->text[++ctx->curr.at];
 }
 
 er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
@@ -60,8 +82,34 @@ er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
         .size       = size,
     };
 
+    ctx.base.at = 0;
+    ctx.base.pos.line = ctx.base.pos.col = 1;
+
+    ctx.curr = ctx.base;
+
     ctx.toks_cap = 128;
     ctx.toks = er_xmalloc(ctx.toks_cap * sizeof(er_tok_t));
+
+    while (ctx.curr.at < ctx.size) {
+        char c = ctx.text[ctx.curr.at];
+
+        if (isalpha(c) || c == '_') {
+            do {
+                c = er_lex_next(&ctx);
+            } while (isalnum(c) || c == '_');
+
+            er_lex_emit(&ctx, ER_TOK_IDENTIFIER);
+        } else if (isalnum(c)) {
+            do {
+                c = er_lex_next(&ctx);
+            } while (isalnum(c) || c == '_');
+
+            er_lex_emit(&ctx, ER_TOK_NUMBER);
+        } else {
+            er_lex_next(&ctx);
+            er_lex_discard(&ctx);
+        }
+    }
 
     er_lex_emit(&ctx, ER_TOK_ENDOFINPUT);
 

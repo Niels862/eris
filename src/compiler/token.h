@@ -1,6 +1,7 @@
 #ifndef ER_COMPILER_TOKEN_H
 #define ER_COMPILER_TOKEN_H
 
+#include "util/string.h"
 #include <stdio.h>
 
 #define ER_KEYWORD_TOKENS(X) \
@@ -10,6 +11,7 @@
         X(SEMICOLON, ";")
 
 #define ER_OTHER_TOKENS(X) \
+        X(IDENTIFIER, "") \
         X(NUMBER, "") \
         X(ENDOFINPUT, "")
 
@@ -27,6 +29,8 @@ typedef enum {
 
 typedef struct {
     er_tokkind_t kind;
+    er_str_t text;
+    er_textpos_t pos;
 } er_tok_t;
 
 char const *er_tokkind_name(er_tokkind_t kind);

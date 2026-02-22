@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 
     size_t i = 0;
     do {
+        fprintf(stderr, "%s:", filename);
         er_tok_print(&toks[i], stderr);
     } while (toks[i++].kind != ER_TOK_ENDOFINPUT);
 
