@@ -1,23 +1,34 @@
-#include "module/instr.h"
-#include "runtime/vm.h"
+#include "compiler/lexer.h"
+#include "util/file.h"
 #include "util/error.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[]) {
     ER_UNUSED(argc), ER_UNUSED(argv);
 
-    char code[] = {
-        ER_OPC_LOAD_CONST, 0, 2,
-        ER_OPC_LOAD_LOCAL, 0, 1,
-        ER_OPC_IADD,
-        ER_OPC_RETURN,
-        ER_OPC_JUMP,
-    };
+    char const *filename = "design.h";
 
-    size_t at = 0;
-    while (at < sizeof(code)) {
-        er_instr_print_with_address(at, code, stderr);
-        at += er_instr_size(code[at]);
+    char *text;
+    size_t size;
+    
+    if (!er_read_text_file(filename, &text, &size)) {
+        fprintf(stderr, "could not read file: %s\n", filename);
+        return 1;
     }
 
+    er_tok_t *toks = er_lex(filename, text, size);
+    if (toks == NULL) {
+        free(text);
+        return 1;
+    }
+
+    size_t i = 0;
+    do {
+        er_tok_print(&toks[i], stderr);
+    } while (toks[i++].kind != ER_TOK_ENDOFINPUT);
+
+    free(text);
+    free(toks);
     return 0;
 }
