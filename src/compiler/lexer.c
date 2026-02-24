@@ -1,7 +1,9 @@
 #include "compiler/lexer.h"
 #include "util/error.h"
 #include "util/alloc.h"
+#include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 typedef struct {
     er_tokkind_t kind;
@@ -27,6 +29,7 @@ static size_t const er_n_special_tokens
 typedef struct {
     size_t at;
     er_textpos_t pos;
+    bool at_eof;
 } er_lexstate_t;
 
 typedef struct {
@@ -42,7 +45,39 @@ typedef struct {
     size_t toks_cap;
 } er_lexctx_t;
 
-void er_lex_emit(er_lexctx_t *ctx, er_tokkind_t kind) {
+static er_tokkind_t er_lex_lookup_tokkind(er_lexctx_t *ctx, 
+                                          er_toksymbol_t const *toks, 
+                                          size_t n_toks) {
+    char const *s = &ctx->text[ctx->base.at];
+    int len = ctx->curr.at - ctx->base.at;
+
+    for (size_t i = 0; i < n_toks; i++) {
+        char const *s2 = toks[i].lexeme;
+
+        if (strncmp(s, s2, len) == 0 && s2[len] == '\0') {
+            return toks[i].kind;
+        }
+    }
+
+    return ER_TOK_NONE;
+}
+
+static bool er_is_special_character(char c) {
+    switch (c) {
+        case '(':
+        case ')':
+        case '{':
+        case '}':
+        case '[':
+        case ']':
+        case ';':
+            return true;
+
+        default:
+            return false;
+    }
+}
+static void er_lex_emit(er_lexctx_t *ctx, er_tokkind_t kind) {
     if (ctx->toks_size + 1 >= ctx->toks_cap) {
         ctx->toks_cap *= 2;
         ctx->toks = er_xrealloc(ctx->toks, ctx->toks_cap * sizeof(er_tok_t));
@@ -70,7 +105,70 @@ static inline char er_lex_next(er_lexctx_t *ctx) {
         ctx->curr.pos.col++;
     }
 
-    return ctx->text[++ctx->curr.at];
+    ctx->curr.at++;
+    if (ctx->curr.at >= ctx->size) {
+        ctx->curr.at_eof = true;
+        return '\0';
+    } else {
+        return ctx->text[ctx->curr.at];
+    }
+}
+
+static void er_lex_identifier(er_lexctx_t *ctx) {
+    char c;
+    do {
+        c = er_lex_next(ctx);
+    } while (isalnum(c) || c == '_');
+
+    er_tokkind_t kind = er_lex_lookup_tokkind(ctx, er_keyword_tokens, 
+                                              er_n_keyword_tokens);
+    if (kind == ER_TOK_NONE) { 
+        er_lex_emit(ctx, ER_TOK_IDENTIFIER);
+    } else {
+        er_lex_emit(ctx, kind);
+    }
+}
+
+static void er_lex_number(er_lexctx_t *ctx) {
+    char c;
+    do {
+        c = er_lex_next(ctx);
+    } while (isalnum(c) || c == '_');
+
+    er_lex_emit(ctx, ER_TOK_NUMBER);
+}
+
+static void er_lex_special(er_lexctx_t *ctx) {
+    er_tokkind_t kind = ER_TOK_NONE, subkind;
+    er_lexstate_t state;
+
+    char c;
+    do {
+        c = er_lex_next(ctx);
+
+        subkind = er_lex_lookup_tokkind(ctx, er_special_tokens, 
+                                        er_n_special_tokens);
+        if (subkind != ER_TOK_NONE) {
+            kind = subkind;
+            state = ctx->curr;
+        }
+    } while (er_is_special_character(c));
+
+    if (kind == ER_TOK_NONE) {
+        fprintf(stderr, "TODO Unrecognized token error\n");
+    } else {
+        ctx->curr = state;
+        er_lex_emit(ctx, kind);
+    }
+}
+
+static void er_lex_comment(er_lexctx_t *ctx) {
+    char c;
+    do {
+        c = er_lex_next(ctx);
+    } while (c != '\n' || ctx->curr.at_eof);
+
+    er_lex_discard(ctx);
 }
 
 er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
@@ -94,20 +192,18 @@ er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
         char c = ctx.text[ctx.curr.at];
 
         if (isalpha(c) || c == '_') {
-            do {
-                c = er_lex_next(&ctx);
-            } while (isalnum(c) || c == '_');
-
-            er_lex_emit(&ctx, ER_TOK_IDENTIFIER);
+            er_lex_identifier(&ctx);
         } else if (isalnum(c)) {
-            do {
-                c = er_lex_next(&ctx);
-            } while (isalnum(c) || c == '_');
-
-            er_lex_emit(&ctx, ER_TOK_NUMBER);
-        } else {
+            er_lex_number(&ctx);
+        } else if (er_is_special_character(c)) {
+            er_lex_special(&ctx);
+        } else if (c == '#') {
+            er_lex_comment(&ctx);
+        } else if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
             er_lex_next(&ctx);
             er_lex_discard(&ctx);
+        } else {
+            fprintf(stderr, "TODO Unrecognized symbol error\n");
         }
     }
 

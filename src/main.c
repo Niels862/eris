@@ -5,9 +5,12 @@
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    ER_UNUSED(argc), ER_UNUSED(argv);
+    if (argc < 2) {
+        fprintf(stderr, "usage: %s [filename]\n", argv[0]);
+        return 1;
+    }
 
-    char const *filename = "design.h";
+    char const *filename = argv[1];
 
     char *text;
     size_t size;

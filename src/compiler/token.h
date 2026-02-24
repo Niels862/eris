@@ -8,6 +8,12 @@
         X(RETURN, "return")
 
 #define ER_SPECIAL_TOKENS(X) \
+        X(LPAREN, "(") \
+        X(RPAREN, ")") \
+        X(LBRACE, "{") \
+        X(RBRACE, "}") \
+        X(LBRACKET, "[") \
+        X(RBRACKET, "]") \
         X(SEMICOLON, ";")
 
 #define ER_OTHER_TOKENS(X) \
