@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+bool er_is_file(char const *path);
+
 bool er_read_text_file(char const *filename, char **text, size_t *size);
 
 #endif

@@ -12,7 +12,7 @@ typedef struct {
     er_pool_t *pool;
 } er_buildmod_t;
 
-er_buildmod_t *er_open_module(char const *module);
+er_buildmod_t *er_buildmod_read(char const *module);
 
 void er_buildmod_delete(er_buildmod_t *bmod);
 

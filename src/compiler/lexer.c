@@ -103,8 +103,15 @@ static void er_lex_discard(er_lexctx_t *ctx) {
     ctx->base = ctx->curr;
 }
 
+static inline char er_lex_curr(er_lexctx_t *ctx) {
+    if (ctx->curr.at >= ctx->bmod->size) {
+        return '\0';
+    }
+    return ctx->bmod->text[ctx->curr.at];
+}
+
 static inline char er_lex_next(er_lexctx_t *ctx) {
-    if (ctx->bmod->text[ctx->curr.at] == '\n') {
+    if (er_lex_curr(ctx) == '\n') {
         ctx->curr.pos.line++;
         ctx->curr.pos.col = 1;
     } else {
@@ -116,7 +123,7 @@ static inline char er_lex_next(er_lexctx_t *ctx) {
         ctx->curr.at_eof = true;
         return '\0';
     } else {
-        return ctx->bmod->text[ctx->curr.at];
+        return er_lex_curr(ctx);
     }
 }
 
@@ -173,7 +180,7 @@ static void er_lex_comment(er_lexctx_t *ctx) {
     char c;
     do {
         c = er_lex_next(ctx);
-    } while (c != '\n' || ctx->curr.at_eof);
+    } while (c != '\n' && !ctx->curr.at_eof);
 
     er_lex_discard(ctx);
 }
@@ -192,7 +199,7 @@ er_tok_t *er_lex(er_buildmod_t *bmod) {
     ctx.toks = er_xmalloc(ctx.toks_cap * sizeof(er_tok_t));
 
     while (ctx.curr.at < ctx.bmod->size) {
-        char c = ctx.bmod->text[ctx.curr.at];
+        char c = er_lex_curr(&ctx);
 
         if (isalpha(c) || c == '_') {
             er_lex_identifier(&ctx);

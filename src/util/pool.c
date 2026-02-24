@@ -2,6 +2,7 @@
 #include "util/alloc.h"
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 typedef struct er_poolblock_t er_poolblock_t;
@@ -65,6 +66,19 @@ void er_pool_delete(er_pool_t *pool) {
 
 void *er_pool_alloc(er_pool_t *pool, size_t size) {
     return er_pool_aligned_alloc(pool, size, sizeof(void *));
+}
+
+char *er_pool_string_alloc(er_pool_t *pool, char const *s, int len) {
+    size_t size;
+    if (len < 0) {
+        size = strlen(s) + 1;
+    } else {
+        size = len + 1;
+    }
+
+    char *s1 = er_pool_aligned_alloc(pool, size, 1);
+    memcpy(s1, s, size);
+    return s1;
 }
 
 void *er_pool_aligned_alloc(er_pool_t *pool, size_t size, size_t align) {

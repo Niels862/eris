@@ -11,6 +11,9 @@ void er_pool_delete(er_pool_t *pool);
 
 void *er_pool_alloc(er_pool_t *pool, size_t size);
 
+// If LEN < 0 then S should be zero-terminated
+char *er_pool_string_alloc(er_pool_t *pool, char const *s, int len);
+
 void *er_pool_aligned_alloc(er_pool_t *pool, size_t size, size_t align);
 
 #endif
