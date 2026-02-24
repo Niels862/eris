@@ -20,17 +20,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    er_tok_t *toks = er_lex(filename, text, size);
+    er_buildmod_t bmod = {
+        .filename   = filename,
+        .text       = text,
+        .size       = size,
+    };
+
+    er_tok_t *toks = er_lex(&bmod);
     if (toks == NULL) {
         free(text);
         return 1;
     }
-
-    size_t i = 0;
-    do {
-        fprintf(stderr, "%s:", filename);
-        er_tok_print(&toks[i], stderr);
-    } while (toks[i++].kind != ER_TOK_ENDOFINPUT);
 
     free(text);
     free(toks);

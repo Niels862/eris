@@ -1,4 +1,5 @@
 #include "compiler/lexer.h"
+#include "compiler/logger.h"
 #include "util/error.h"
 #include "util/alloc.h"
 #include <string.h>
@@ -33,9 +34,7 @@ typedef struct {
 } er_lexstate_t;
 
 typedef struct {
-    char const *filename;
-    char const *text;
-    size_t const size;
+    er_buildmod_t *bmod;
 
     er_lexstate_t base;
     er_lexstate_t curr;
@@ -44,23 +43,6 @@ typedef struct {
     size_t toks_size;
     size_t toks_cap;
 } er_lexctx_t;
-
-static er_tokkind_t er_lex_lookup_tokkind(er_lexctx_t *ctx, 
-                                          er_toksymbol_t const *toks, 
-                                          size_t n_toks) {
-    char const *s = &ctx->text[ctx->base.at];
-    int len = ctx->curr.at - ctx->base.at;
-
-    for (size_t i = 0; i < n_toks; i++) {
-        char const *s2 = toks[i].lexeme;
-
-        if (strncmp(s, s2, len) == 0 && s2[len] == '\0') {
-            return toks[i].kind;
-        }
-    }
-
-    return ER_TOK_NONE;
-}
 
 static bool er_is_special_character(char c) {
     switch (c) {
@@ -77,6 +59,30 @@ static bool er_is_special_character(char c) {
             return false;
     }
 }
+
+static void er_lex_err(er_lexctx_t *ctx, char const *msg) {
+    char const *s = &ctx->bmod->text[ctx->base.at];
+    int len = ctx->curr.at - ctx->base.at;
+    er_err(ctx->bmod, ctx->base.pos, "%s: %.*s", msg, len, s);
+}
+
+static er_tokkind_t er_lex_lookup_tokkind(er_lexctx_t *ctx, 
+                                          er_toksymbol_t const *toks, 
+                                          size_t n_toks) {
+    char const *s = &ctx->bmod->text[ctx->base.at];
+    int len = ctx->curr.at - ctx->base.at;
+
+    for (size_t i = 0; i < n_toks; i++) {
+        char const *s2 = toks[i].lexeme;
+
+        if (strncmp(s, s2, len) == 0 && s2[len] == '\0') {
+            return toks[i].kind;
+        }
+    }
+
+    return ER_TOK_NONE;
+}
+
 static void er_lex_emit(er_lexctx_t *ctx, er_tokkind_t kind) {
     if (ctx->toks_size + 1 >= ctx->toks_cap) {
         ctx->toks_cap *= 2;
@@ -86,7 +92,7 @@ static void er_lex_emit(er_lexctx_t *ctx, er_tokkind_t kind) {
     er_tok_t *tok = &ctx->toks[ctx->toks_size++];
 
     tok->kind = kind;
-    tok->text.data = ctx->text + ctx->base.at;
+    tok->text.data = ctx->bmod->text + ctx->base.at;
     tok->text.len = ctx->curr.at - ctx->base.at;
     tok->pos = ctx->base.pos;
 
@@ -98,7 +104,7 @@ static void er_lex_discard(er_lexctx_t *ctx) {
 }
 
 static inline char er_lex_next(er_lexctx_t *ctx) {
-    if (ctx->text[ctx->curr.at] == '\n') {
+    if (ctx->bmod->text[ctx->curr.at] == '\n') {
         ctx->curr.pos.line++;
         ctx->curr.pos.col = 1;
     } else {
@@ -106,11 +112,11 @@ static inline char er_lex_next(er_lexctx_t *ctx) {
     }
 
     ctx->curr.at++;
-    if (ctx->curr.at >= ctx->size) {
+    if (ctx->curr.at >= ctx->bmod->size) {
         ctx->curr.at_eof = true;
         return '\0';
     } else {
-        return ctx->text[ctx->curr.at];
+        return ctx->bmod->text[ctx->curr.at];
     }
 }
 
@@ -155,7 +161,8 @@ static void er_lex_special(er_lexctx_t *ctx) {
     } while (er_is_special_character(c));
 
     if (kind == ER_TOK_NONE) {
-        fprintf(stderr, "TODO Unrecognized token error\n");
+        er_lex_err(ctx, "unrecognized token");
+        er_lex_discard(ctx);
     } else {
         ctx->curr = state;
         er_lex_emit(ctx, kind);
@@ -171,13 +178,9 @@ static void er_lex_comment(er_lexctx_t *ctx) {
     er_lex_discard(ctx);
 }
 
-er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
-    ER_UNUSED(er_n_keyword_tokens), ER_UNUSED(er_n_special_tokens);
-
+er_tok_t *er_lex(er_buildmod_t *bmod) {
     er_lexctx_t ctx = {
-        .filename   = filename,
-        .text       = text,
-        .size       = size,
+        .bmod = bmod,
     };
 
     ctx.base.at = 0;
@@ -188,8 +191,8 @@ er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
     ctx.toks_cap = 128;
     ctx.toks = er_xmalloc(ctx.toks_cap * sizeof(er_tok_t));
 
-    while (ctx.curr.at < ctx.size) {
-        char c = ctx.text[ctx.curr.at];
+    while (ctx.curr.at < ctx.bmod->size) {
+        char c = ctx.bmod->text[ctx.curr.at];
 
         if (isalpha(c) || c == '_') {
             er_lex_identifier(&ctx);
@@ -203,7 +206,9 @@ er_tok_t *er_lex(char const *filename, char const *text, size_t size) {
             er_lex_next(&ctx);
             er_lex_discard(&ctx);
         } else {
-            fprintf(stderr, "TODO Unrecognized symbol error\n");
+            er_lex_next(&ctx);
+            er_lex_err(&ctx, "unrecognized character");
+            er_lex_discard(&ctx);
         }
     }
 
