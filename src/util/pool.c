@@ -27,6 +27,8 @@ static er_poolblock_t *er_poolblock_new(size_t size, er_poolblock_t *next) {
     block->at = 0;
     block->next = next;
 
+    er_invalidate(block->data, block->size);
+
     return block;
 }
 

@@ -22,7 +22,7 @@ typedef union {
     } mod;
 
     struct {
-        er_str_t *name;
+        er_str_t name;
 
         er_astnode_t **stmts;
         size_t n_stmts;

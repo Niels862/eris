@@ -7,4 +7,6 @@ void *er_xmalloc(size_t size);
 
 void *er_xrealloc(void *p, size_t size);
 
+void er_invalidate(void *p, size_t size);
+
 #endif

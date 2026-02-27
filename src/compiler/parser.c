@@ -29,7 +29,7 @@ er_astnode_t *er_astnode_alloc(er_buildmod_t *bmod,
 
     n->kind = kind;
     n->pos = pos;
-    memset(n + sizeof(er_astnode_t), 0, datasize);
+    memset(&n->data, 0, datasize);
 
     return n;
 }
@@ -110,17 +110,27 @@ static er_tok_t *er_expect(er_parsectx_t *p, er_tokkind_t kind) {
 }
 
 static er_astnode_t *er_parse_func(er_parsectx_t *p) {
-    er_textpos_t pos = p->curr->pos;
-
     if (!er_expect(p, ER_TOK_IDENTIFIER)) {
         return NULL;
     }
+
+    er_tok_t *nametok = er_expect(p, ER_TOK_IDENTIFIER);
+    if (nametok == NULL) {
+        return NULL;
+    }
+
+    er_textpos_t pos = nametok->pos;
+    er_str_t *name = &nametok->text;
 
     er_nodelist_t stmts;
     er_nodelist_init(p, &stmts);
 
     er_astnode_t *n = ER_AST_ALLOC(ER_AST_FUNC, pos, func);
-    er_nodelist_move(p, &stmts, &n->data.func.stmts, &n->data.func.n_stmts);
+
+    n->data.func.name = *name;
+    er_nodelist_move(p, &stmts, 
+                     &n->data.func.stmts, 
+                     &n->data.func.n_stmts);
 
     return n;
 }
@@ -141,7 +151,9 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
     }
 
     er_astnode_t *n = ER_AST_ALLOC(ER_AST_MOD, pos, mod);
-    er_nodelist_move(p, &funcs, &n->data.mod.funcs, &n->data.mod.n_funcs);
+    er_nodelist_move(p, &funcs, 
+                     &n->data.mod.funcs, 
+                     &n->data.mod.n_funcs);
 
     return n;
 }
