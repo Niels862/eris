@@ -16,7 +16,7 @@ else
   $(error Unknown build mode '$(MODE)'; use MODE=release or MODE=debug)
 endif
 
-CCFLAGS += -Wall -Wextra -Werror -pedantic -std=$(CCSTD)
+CCFLAGS += -Wall -Wextra -Werror -Wpedantic -Wno-unused-function -std=$(CCSTD)
 CFLAGS  := -MMD -MP -I$(INC_DIR)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.c')

@@ -1,4 +1,5 @@
 #include "compiler/lexer.h"
+#include "compiler/parser.h"
 #include "util/file.h"
 #include "util/error.h"
 #include <stdlib.h>
@@ -20,6 +21,10 @@ int main(int argc, char *argv[]) {
     if (toks == NULL) {
         return 1;
     }
+
+    er_astnode_t *n = er_parse(bmod, toks);
+
+    ER_UNUSED(n);
 
     free(toks);
     return 0;
