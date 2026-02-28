@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdbool.h>
 #include <assert.h>
 
 static er_astdata_t const er_dummy_astdata;
@@ -110,6 +111,123 @@ static er_tok_t *er_expect(er_parsectx_t *p, er_tokkind_t kind) {
     return NULL;
 }
 
+static er_astnode_t *er_parse_stmt(er_parsectx_t *p);
+
+static bool er_parse_compound(er_parsectx_t *p, er_nodelist_t *nl) {
+    er_nodelist_init(p, nl);
+
+    if (er_expect(p, ER_TOK_LBRACE) == NULL) {
+        return false;
+    }
+
+    bool err = false;
+    while (p->curr->kind != ER_TOK_ENDOFINPUT 
+            && p->curr->kind != ER_TOK_RBRACE) {
+        er_astnode_t *n = er_parse_stmt(p);
+
+        if (n != NULL) {
+            er_nodelist_add(p, nl, n);
+        } else {
+            err = true;
+        }
+    }
+
+    if (er_expect(p, ER_TOK_RBRACE) == NULL) {
+        return false;
+    }
+
+    return err == false;
+}
+
+static void er_panic_stmt(er_parsectx_t *p) {
+    do {
+        if (p->curr->kind == ER_TOK_SEMICOLON) {
+            er_consume(p);
+            return;
+        }
+
+        if (p->curr->kind == ER_TOK_LBRACE) {
+            er_nodelist_t dummy;
+            er_parse_compound(p, &dummy);
+            return;
+        }
+
+        if (p->curr->kind == ER_TOK_RBRACE) {
+            return;
+        }
+
+        er_consume(p);
+    } while (p->curr->kind != ER_TOK_ENDOFINPUT);
+}
+
+static er_astnode_t *er_parse_value(er_parsectx_t *p) {
+    er_tok_t *tok = er_expect(p, ER_TOK_NUMBER);
+    if (tok == NULL) {
+        return NULL;
+    }
+
+    er_textpos_t pos = tok->pos;
+    int64_t val = 0;
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, pos, e_int);
+    n->d.e_int.val = val;
+
+    return n;
+}
+
+static er_astnode_t *er_parse_expr(er_parsectx_t *p) {
+    return er_parse_value(p);
+}
+
+static er_astnode_t *er_parse_return_stmt(er_parsectx_t *p) {
+    er_tok_t *tok = er_expect(p, ER_TOK_RETURN);
+    if (tok == NULL) {
+        return NULL;
+    }
+
+    er_textpos_t pos = tok->pos;
+
+    er_astnode_t *vn = NULL;
+    if (p->curr->kind != ER_TOK_SEMICOLON) {
+        vn = er_parse_expr(p);
+
+        if (vn == NULL) {
+            return NULL;
+        }
+    }
+
+    if (er_expect(p, ER_TOK_SEMICOLON) == NULL) {
+        return NULL;
+    }
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_RET, pos, s_ret);
+    n->d.s_ret.val = vn;
+
+    return n;
+}
+
+static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
+    er_astnode_t *n = NULL;
+    
+    switch (p->curr->kind) {
+        case ER_TOK_RETURN:
+            n = er_parse_return_stmt(p);
+            break;
+
+        default:
+            er_err(p->bmod, p->curr->pos, 
+                   "expected statement, but got %s",
+                  er_tokkind_name(p->curr->kind));
+            break;
+    }
+    
+    if (n == NULL) {
+        er_panic_stmt(p);
+    }
+
+    return n;
+}
+
 static er_astnode_t *er_parse_func(er_parsectx_t *p) {
     if (er_expect(p, ER_TOK_IDENTIFIER) == NULL) {
         return NULL;
@@ -122,9 +240,14 @@ static er_astnode_t *er_parse_func(er_parsectx_t *p) {
 
     er_textpos_t pos = nametok->pos;
     er_str_t *name = &nametok->text;
+    
+    er_expect(p, ER_TOK_LPAREN);
+    er_expect(p, ER_TOK_RPAREN);
 
     er_nodelist_t stmts;
-    er_nodelist_init(p, &stmts);
+    if (!er_parse_compound(p, &stmts)) {
+        return NULL;
+    }
 
     er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, func);
     n->d.func.name = *name;

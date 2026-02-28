@@ -52,7 +52,7 @@ static void er_print_list(char const *attr,
     fprintf(stderr, "]\n");
 }
 
-static void er_ast_print_str(char const *attr, er_str_t *str, size_t depth) {
+static void er_print_str(char const *attr, er_str_t *str, size_t depth) {
     er_print_header(attr, depth);
     fprintf(stderr, "%.*s\n", str->len, str->data);
 }
@@ -81,11 +81,12 @@ static void er_print_node(char const *attr,
             break;
 
         case ER_AST_FUNC:
-            er_ast_print_str("name", &d->func.name, ndepth);
+            er_print_str("name", &d->func.name, ndepth);
             er_print_list("stmts", d->func.stmts, d->func.n_stmts, ndepth);
             break;
 
         case ER_AST_RET:
+            er_print_node("value", d->s_ret.val, ndepth);
             break;
 
         case ER_AST_INT:
