@@ -29,12 +29,12 @@ er_astnode_t *er_astnode_alloc(er_buildmod_t *bmod,
 
     n->kind = kind;
     n->pos = pos;
-    memset(&n->data, 0, datasize);
+    memset(&n->d, 0, datasize);
 
     return n;
 }
 
-#define ER_AST_ALLOC(kind, pos, data) \
+#define ER_AST_ALLOC(p, kind, pos, data) \
         er_astnode_alloc(p->bmod, kind, pos, sizeof(er_dummy_astdata.data))
 
 static void er_nodelist_init(er_parsectx_t *p, er_nodelist_t *nl) {
@@ -75,8 +75,9 @@ static void er_nodelist_move(er_parsectx_t *p, er_nodelist_t *nl,
         *dst = NULL;
     } else {
         *dst = er_pool_alloc(p->bmod->pool, size);
-        memcpy(dst, nl->nodes, size);
-
+        memcpy(*dst, nl->nodes, size);
+        
+        er_invalidate(nl->nodes, nl->size * sizeof(er_astnode_t *));
         free(nl->nodes);
         nl->nodes = NULL;
     }
@@ -110,7 +111,7 @@ static er_tok_t *er_expect(er_parsectx_t *p, er_tokkind_t kind) {
 }
 
 static er_astnode_t *er_parse_func(er_parsectx_t *p) {
-    if (!er_expect(p, ER_TOK_IDENTIFIER)) {
+    if (er_expect(p, ER_TOK_IDENTIFIER) == NULL) {
         return NULL;
     }
 
@@ -125,12 +126,11 @@ static er_astnode_t *er_parse_func(er_parsectx_t *p) {
     er_nodelist_t stmts;
     er_nodelist_init(p, &stmts);
 
-    er_astnode_t *n = ER_AST_ALLOC(ER_AST_FUNC, pos, func);
-
-    n->data.func.name = *name;
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, func);
+    n->d.func.name = *name;
     er_nodelist_move(p, &stmts, 
-                     &n->data.func.stmts, 
-                     &n->data.func.n_stmts);
+                     &n->d.func.stmts, 
+                     &n->d.func.n_stmts);
 
     return n;
 }
@@ -150,10 +150,10 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
         }
     }
 
-    er_astnode_t *n = ER_AST_ALLOC(ER_AST_MOD, pos, mod);
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_MOD, pos, mod);
     er_nodelist_move(p, &funcs, 
-                     &n->data.mod.funcs, 
-                     &n->data.mod.n_funcs);
+                     &n->d.mod.funcs, 
+                     &n->d.mod.n_funcs);
 
     return n;
 }

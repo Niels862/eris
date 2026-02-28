@@ -4,14 +4,18 @@
 #include "util/string.h"
 #include <stddef.h>
 
-typedef enum {
-    ER_AST_NONE,
+#define ER_AST_NODES(X) \
+    X(NONE) \
+    X(MOD) \
+    X(FUNC) \
+    X(RET) \
+    X(INT)
 
-    ER_AST_MOD,
-    ER_AST_FUNC,
-    ER_AST_RET,
-    ER_AST_INT,
+#define X(n) ER_AST_##n,
+typedef enum {
+    ER_AST_NODES(X)
 } er_astkind_t;
+#undef X
 
 typedef struct er_astnode_t er_astnode_t;
 
@@ -40,7 +44,9 @@ typedef union {
 struct er_astnode_t {
     er_astkind_t kind;
     er_textpos_t pos;
-    er_astdata_t data;
+    er_astdata_t d;
 };
+
+void er_ast_print(er_astnode_t *n);
 
 #endif
