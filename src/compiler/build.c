@@ -16,10 +16,10 @@ static er_buildmod_t *er_buildmod_read_path(char const *path) {
 
     er_buildmod_t *bmod = er_xmalloc(sizeof(er_buildmod_t));
 
-    bmod->pool = er_pool_new(4096);
+    bmod->arena = er_arena_new(4096);
     bmod->text = text;
     bmod->size = size;
-    bmod->filename = er_pool_string_alloc(bmod->pool, path, -1);
+    bmod->filename = er_arena_string_alloc(bmod->arena, path, -1);
 
     return bmod;
 }

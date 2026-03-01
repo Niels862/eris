@@ -25,7 +25,7 @@ typedef enum {
     // ...
 } er_astkind_t;
 
-typedef struct { // AST consists of pool-owned data structures
+typedef struct { // AST consists of arena-owned data structures
     er_astkind_t kind;
     er_textpos_t pos;
 
@@ -91,12 +91,12 @@ typedef struct {
 
 typedef struct {
     // opaque, only interface with functions
-} er_mempool_t;
+} er_memarena_t;
 
 typedef struct {
     er_astnode_t *ast;
     er_irblock_t *ir;
-    er_mempool_t pool;
+    er_memarena_t arena;
 } er_modbuilder_t;
 
 typedef enum {

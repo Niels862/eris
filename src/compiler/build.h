@@ -1,7 +1,7 @@
 #ifndef ER_COMPILER_BUILDMOD_H
 #define ER_COMPILER_BUILDMOD_H
 
-#include "util/pool.h"
+#include "util/arena.h"
 #include <stddef.h>
 
 typedef struct {
@@ -9,7 +9,7 @@ typedef struct {
     char *text;
     size_t size;
 
-    er_pool_t *pool;
+    er_arena_t *arena;
 } er_buildmod_t;
 
 er_buildmod_t *er_buildmod_read(char const *module);

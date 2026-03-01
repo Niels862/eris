@@ -26,7 +26,7 @@ er_astnode_t *er_astnode_alloc(er_buildmod_t *bmod,
                                er_astkind_t kind, er_textpos_t pos, 
                                size_t datasize) {
     size_t size = sizeof(er_astnode_t) + datasize;
-    er_astnode_t *n = er_pool_alloc(bmod->pool, size);
+    er_astnode_t *n = er_arena_alloc(bmod->arena, size);
 
     n->kind = kind;
     n->pos = pos;
@@ -75,7 +75,7 @@ static void er_nodelist_move(er_parsectx_t *p, er_nodelist_t *nl,
     if (nl->size == 0) {
         *dst = NULL;
     } else {
-        *dst = er_pool_alloc(p->bmod->pool, size);
+        *dst = er_arena_alloc(p->bmod->arena, size);
         memcpy(*dst, nl->nodes, size);
         
         er_invalidate(nl->nodes, nl->size * sizeof(er_astnode_t *));
