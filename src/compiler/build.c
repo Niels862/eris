@@ -1,11 +1,25 @@
 #include "compiler/build.h"
 #include "util/file.h"
 #include "util/alloc.h"
+#include "util/string.h"
 #include "util/error.h"
 #include <stdio.h>
 #include <string.h>
 
 #define ER_PATH_BUFFER_SIZE 4096
+
+static er_buildmod_t *er_buildmod_new(char const *filename, 
+                                      char *text, size_t size) {
+    er_buildmod_t *bmod = er_xmalloc(sizeof(er_buildmod_t));
+
+    bmod->text = text;
+    bmod->size = size;
+    bmod->filename = er_strdup(filename);
+
+    bmod->arenas.parse = er_arena_new(4096);
+
+    return bmod;
+}
 
 static er_buildmod_t *er_buildmod_read_path(char const *path) {
     char *text;
@@ -14,14 +28,7 @@ static er_buildmod_t *er_buildmod_read_path(char const *path) {
         return NULL;
     }
 
-    er_buildmod_t *bmod = er_xmalloc(sizeof(er_buildmod_t));
-
-    bmod->arena = er_arena_new(4096);
-    bmod->text = text;
-    bmod->size = size;
-    bmod->filename = er_arena_string_alloc(bmod->arena, path, -1);
-
-    return bmod;
+    return er_buildmod_new(path, text, size);
 }
 
 er_buildmod_t *er_buildmod_read(char const *module) {

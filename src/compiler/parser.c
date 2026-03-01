@@ -22,11 +22,11 @@ typedef struct {
     size_t cap;
 } er_nodelist_t;
 
-er_astnode_t *er_astnode_alloc(er_buildmod_t *bmod, 
+er_astnode_t *er_astnode_alloc(er_parsectx_t *p, 
                                er_astkind_t kind, er_textpos_t pos, 
                                size_t datasize) {
     size_t size = sizeof(er_astnode_t) + datasize;
-    er_astnode_t *n = er_arena_alloc(bmod->arena, size);
+    er_astnode_t *n = er_arena_alloc(p->bmod->arenas.parse, size);
 
     n->kind = kind;
     n->pos = pos;
@@ -36,7 +36,7 @@ er_astnode_t *er_astnode_alloc(er_buildmod_t *bmod,
 }
 
 #define ER_AST_ALLOC(p, kind, pos, data) \
-        er_astnode_alloc(p->bmod, kind, pos, sizeof(er_dummy_astdata.data))
+        er_astnode_alloc(p, kind, pos, sizeof(er_dummy_astdata.data))
 
 static void er_nodelist_init(er_parsectx_t *p, er_nodelist_t *nl) {
     ER_UNUSED(p);
@@ -75,7 +75,7 @@ static void er_nodelist_move(er_parsectx_t *p, er_nodelist_t *nl,
     if (nl->size == 0) {
         *dst = NULL;
     } else {
-        *dst = er_arena_alloc(p->bmod->arena, size);
+        *dst = er_arena_alloc(p->bmod->arenas.parse, size);
         memcpy(*dst, nl->nodes, size);
         
         er_invalidate(nl->nodes, nl->size * sizeof(er_astnode_t *));

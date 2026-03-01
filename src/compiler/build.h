@@ -9,7 +9,9 @@ typedef struct {
     char *text;
     size_t size;
 
-    er_arena_t *arena;
+    struct {
+        er_arena_t *parse;
+    } arenas;
 } er_buildmod_t;
 
 er_buildmod_t *er_buildmod_read(char const *module);
