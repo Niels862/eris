@@ -12,6 +12,7 @@ static er_astdata_t const er_dummy_astdata;
 
 typedef struct {
     er_buildmod_t *bmod;
+    er_arena_t *scratch;
     er_tok_t *toks;
     er_tok_t *curr;
 } er_parsectx_t;
@@ -283,12 +284,15 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
 
 er_astnode_t *er_parse(er_buildmod_t *bmod, er_tok_t *toks) {
     er_parsectx_t p = {
-        .bmod = bmod,
-        .toks = toks,
-        .curr = toks,
+        .bmod       = bmod,
+        .toks       = toks,
+        .curr       = toks,
+        .scratch    = er_arena_new(4096),
     };
 
     er_astnode_t *mod = er_parse_mod(&p);
+
+    er_arena_delete(p.scratch);
 
     return mod;
 }

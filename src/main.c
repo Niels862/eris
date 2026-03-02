@@ -24,9 +24,9 @@ int main(int argc, char *argv[]) {
 
     er_astnode_t *n = er_parse(bmod, toks);
     er_ast_print(n);
-
-    ER_UNUSED(n);
-
     free(toks);
+
+    er_buildmod_delete(bmod);
+
     return 0;
 }

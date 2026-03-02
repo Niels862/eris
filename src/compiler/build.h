@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 typedef struct {
-    char const *filename;
+    char *filename;
     char *text;
     size_t size;
 
