@@ -2,6 +2,7 @@
 #define ER_COMPILER_BUILDMOD_H
 
 #include "util/arena.h"
+#include "util/error.h"
 #include <stddef.h>
 
 typedef struct {
@@ -13,6 +14,10 @@ typedef struct {
         er_arena_t *parse;
     } arenas;
 } er_buildmod_t;
+
+typedef struct {
+    ER_EMPTY;
+} er_buildfunc_t;
 
 er_buildmod_t *er_buildmod_read(char const *module);
 

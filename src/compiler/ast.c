@@ -69,25 +69,31 @@ static void er_print_node(char const *attr,
     fprintf(stderr, "%s at %d:%d {\n", 
             er_ast_name(n->kind), n->pos.line, n->pos.col);
 
-    er_astdata_t *d = &n->d;
+    er_astdata_t *data = &n->data;
     size_t ndepth = depth + 1;
 
     switch (n->kind) {
         case ER_AST_NONE:
             return;
 
-        case ER_AST_MOD:
-            er_print_list("funcs", d->mod.funcs, d->mod.n_funcs, ndepth);
+        case ER_AST_MOD: {
+            er_astmod_t *Mod = &data->Mod;
+            er_print_list("funcs", Mod->funcs, Mod->n_funcs, ndepth);
             break;
+        }
 
-        case ER_AST_FUNC:
-            er_print_str("name", &d->func.name, ndepth);
-            er_print_list("stmts", d->func.stmts, d->func.n_stmts, ndepth);
+        case ER_AST_FUNC: {
+            er_astfunc_t *Func = &data->Func;
+            er_print_str("name", &Func->name, ndepth);
+            er_print_list("stmts", Func->stmts, Func->n_stmts, ndepth);
             break;
+        }
 
-        case ER_AST_RET:
-            er_print_node("value", d->s_ret.val, ndepth);
+        case ER_AST_RET: {
+            er_astret_t *Ret = &data->Ret;
+            er_print_node("value", Ret->val, ndepth);
             break;
+        }
 
         case ER_AST_INT:
             break;

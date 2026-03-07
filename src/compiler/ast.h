@@ -19,32 +19,36 @@ typedef enum {
 
 typedef struct er_astnode_t er_astnode_t;
 
+typedef struct {
+    er_astnode_t **funcs;
+    size_t n_funcs;
+} er_astmod_t;
+
+typedef struct {
+    er_str_t name;
+    er_astnode_t **stmts;
+    size_t n_stmts;
+} er_astfunc_t;
+
+typedef struct {
+    er_astnode_t *val;
+} er_astret_t;
+
+typedef struct {
+    int64_t val;
+} er_astint_t;
+
 typedef union {
-    struct {
-        er_astnode_t **funcs;
-        size_t n_funcs;
-    } mod;
-
-    struct {
-        er_str_t name;
-
-        er_astnode_t **stmts;
-        size_t n_stmts;
-    } func;
-
-    struct {
-        er_astnode_t *val;
-    } s_ret;
-
-    struct {
-        int64_t val;
-    } e_int;
+    er_astmod_t Mod;
+    er_astfunc_t Func;
+    er_astret_t Ret;
+    er_astint_t Int;
 } er_astdata_t;
 
 struct er_astnode_t {
     er_astkind_t kind;
     er_textpos_t pos;
-    er_astdata_t d;
+    er_astdata_t data;
 };
 
 void er_ast_print(er_astnode_t *n);

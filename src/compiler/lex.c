@@ -1,4 +1,4 @@
-#include "compiler/lexer.h"
+#include "compiler/lex.h"
 #include "compiler/logger.h"
 #include "util/error.h"
 #include "util/alloc.h"

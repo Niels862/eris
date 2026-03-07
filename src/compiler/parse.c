@@ -1,4 +1,4 @@
-#include "compiler/parser.h"
+#include "compiler/parse.h"
 #include "compiler/logger.h"
 #include "util/alloc.h"
 #include "util/error.h"
@@ -17,10 +17,13 @@ typedef struct {
     er_tok_t *curr;
 } er_parsectx_t;
 
+#define ER_NODELIST_STATIC_DATA_SIZE 16
+
 typedef struct {
     er_astnode_t **nodes;
     size_t size;
     size_t cap;
+    er_astnode_t *data[ER_NODELIST_STATIC_DATA_SIZE];
 } er_nodelist_t;
 
 er_astnode_t *er_astnode_alloc(er_parsectx_t *p, 
@@ -31,7 +34,7 @@ er_astnode_t *er_astnode_alloc(er_parsectx_t *p,
 
     n->kind = kind;
     n->pos = pos;
-    memset(&n->d, 0, datasize);
+    memset(&n->data, 0, datasize);
 
     return n;
 }
@@ -42,46 +45,37 @@ er_astnode_t *er_astnode_alloc(er_parsectx_t *p,
 static void er_nodelist_init(er_parsectx_t *p, er_nodelist_t *nl) {
     ER_UNUSED(p);
 
-    nl->nodes = NULL;
+    nl->nodes = nl->data;
     nl->size = 0;
-    nl->cap = 0;
+    nl->cap = ER_NODELIST_STATIC_DATA_SIZE;
 }
 
 static void er_nodelist_add(er_parsectx_t *p, er_nodelist_t *nl, 
                             er_astnode_t *n) {
-    ER_UNUSED(p);
-
     assert(n != NULL);
-
-    if (nl->cap == 0) {
-        nl->cap = 4;
-        nl->nodes = er_xmalloc(nl->cap * sizeof(er_astnode_t *));
-    } else {
-        if (nl->size + 1 > nl->cap) {
-            nl->cap *= 2;
-            nl->nodes = er_xrealloc(nl->nodes, nl->cap * sizeof(er_astnode_t));
-        }
+    
+    if (nl->size + 1 > nl->cap) {
+        nl->nodes = er_arena_realloc(p->scratch, nl->nodes, 
+                                     nl->cap, 2 * nl->cap, 
+                                     sizeof(er_astnode_t *));
+        nl->cap *= 2;
     }
 
-    nl->nodes[nl->size++] = n;
+    nl->nodes[nl->size] = n;
+    nl->size++;
 }
 
 static void er_nodelist_move(er_parsectx_t *p, er_nodelist_t *nl, 
                              er_astnode_t ***dst, size_t *dst_size) {
     assert(*dst == NULL);
     assert(*dst_size == 0);
-
-    size_t size = nl->size * sizeof(er_astnode_t *);
     
     if (nl->size == 0) {
         *dst = NULL;
     } else {
-        *dst = er_arena_alloc(p->bmod->arenas.parse, size);
-        memcpy(*dst, nl->nodes, size);
-        
-        er_invalidate(nl->nodes, nl->size * sizeof(er_astnode_t *));
-        free(nl->nodes);
-        nl->nodes = NULL;
+        *dst = er_arena_realloc(p->bmod->arenas.parse, 
+                                nl->nodes, nl->size, nl->size, 
+                                sizeof(er_astnode_t *));
     }
 
     *dst_size = nl->size;
@@ -170,8 +164,8 @@ static er_astnode_t *er_parse_value(er_parsectx_t *p) {
     er_textpos_t pos = tok->pos;
     int64_t val = 0;
 
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, pos, e_int);
-    n->d.e_int.val = val;
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, pos, Int);
+    n->data.Int.val = val;
 
     return n;
 }
@@ -201,8 +195,8 @@ static er_astnode_t *er_parse_return_stmt(er_parsectx_t *p) {
         return NULL;
     }
 
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_RET, pos, s_ret);
-    n->d.s_ret.val = vn;
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_RET, pos, Ret);
+    n->data.Ret.val = vn;
 
     return n;
 }
@@ -250,11 +244,11 @@ static er_astnode_t *er_parse_func(er_parsectx_t *p) {
         return NULL;
     }
 
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, func);
-    n->d.func.name = *name;
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, Func);
+    n->data.Func.name = *name;
     er_nodelist_move(p, &stmts, 
-                     &n->d.func.stmts, 
-                     &n->d.func.n_stmts);
+                     &n->data.Func.stmts, 
+                     &n->data.Func.n_stmts);
 
     return n;
 }
@@ -274,10 +268,10 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
         }
     }
 
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_MOD, pos, mod);
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_MOD, pos, Mod);
     er_nodelist_move(p, &funcs, 
-                     &n->d.mod.funcs, 
-                     &n->d.mod.n_funcs);
+                     &n->data.Mod.funcs, 
+                     &n->data.Mod.n_funcs);
 
     return n;
 }
@@ -290,9 +284,9 @@ er_astnode_t *er_parse(er_buildmod_t *bmod, er_tok_t *toks) {
         .scratch    = er_arena_new(4096),
     };
 
-    er_astnode_t *mod = er_parse_mod(&p);
+    er_astnode_t *Mod = er_parse_mod(&p);
 
     er_arena_delete(p.scratch);
 
-    return mod;
+    return Mod;
 }

@@ -1,4 +1,5 @@
 #include "util/alloc.h"
+#include "util/error.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

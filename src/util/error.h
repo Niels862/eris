@@ -18,4 +18,11 @@ static inline void eprintf(char const *format, ...) {
 
 #define ER_UNUSED(v) (void)v
 
+#define ER_EMPTY char _
+
+#define ER_FATAL(...) er_fatal(__FILE__, __LINE__, __VA_ARGS__)
+
+__attribute__((noreturn))
+void er_fatal(char const *file, int line, char const *format, ...);
+
 #endif
