@@ -37,6 +37,10 @@ typedef struct {
     size_t n_nodes;
 } er_irblock_t;
 
+char const *er_ir_name(er_irtag_t tag);
+
+er_irdatakind_t er_ir_kind(er_irtag_t tag);
+
 void er_irnode_print(er_irnode_t *node);
 
 #endif

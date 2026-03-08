@@ -15,7 +15,7 @@ static er_irdatakind_t const er_irtag_datakinds[] = {
 };
 #undef X
 
-static char const *er_ir_name(er_irtag_t tag) {
+char const *er_ir_name(er_irtag_t tag) {
     if (tag < sizeof(er_irtag_names) / sizeof(*er_irtag_names)) {
         return er_irtag_names[tag];
     } else {
@@ -23,7 +23,7 @@ static char const *er_ir_name(er_irtag_t tag) {
     }
 }
 
-static er_irdatakind_t er_ir_kind(er_irtag_t tag) {
+er_irdatakind_t er_ir_kind(er_irtag_t tag) {
     assert(tag < sizeof(er_irtag_datakinds) / sizeof(*er_irtag_datakinds));
     return er_irtag_datakinds[tag];
 }
@@ -46,7 +46,7 @@ void er_irnode_print(er_irnode_t *node) {
             break;
 
         case ER_IRDATA_S64:
-            fprintf(stderr, "% " PRId64 "\n", node->data.s64);
+            fprintf(stderr, "%" PRId64 "\n", node->data.s64);
             break;
     }
 }

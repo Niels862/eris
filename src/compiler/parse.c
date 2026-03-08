@@ -276,17 +276,18 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
     return n;
 }
 
-er_astnode_t *er_parse(er_buildmod_t *bmod, er_tok_t *toks) {
+void er_parse(er_buildmod_t *bmod) {
+    assert(bmod->toks != NULL);
+    assert(bmod->root == NULL);
+
     er_parsectx_t p = {
         .bmod       = bmod,
-        .toks       = toks,
-        .curr       = toks,
+        .toks       = bmod->toks,
+        .curr       = bmod->toks,
         .scratch    = er_arena_new(4096),
     };
 
-    er_astnode_t *Mod = er_parse_mod(&p);
+    bmod->root = er_parse_mod(&p);
 
     er_arena_delete(p.scratch);
-
-    return Mod;
 }

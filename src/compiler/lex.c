@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <assert.h>
 
 typedef struct {
     er_tokkind_t kind;
@@ -185,7 +186,9 @@ static void er_lex_comment(er_lexctx_t *ctx) {
     er_lex_discard(ctx);
 }
 
-er_tok_t *er_lex(er_buildmod_t *bmod) {
+void er_lex(er_buildmod_t *bmod) {
+    assert(bmod->toks == NULL);
+
     er_lexctx_t ctx = {
         .bmod = bmod,
     };
@@ -221,5 +224,5 @@ er_tok_t *er_lex(er_buildmod_t *bmod) {
 
     er_lex_emit(&ctx, ER_TOK_ENDOFINPUT);
 
-    return ctx.toks;
+    bmod->toks = ctx.toks;
 }

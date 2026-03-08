@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #define ER_PATH_BUFFER_SIZE 4096
 
@@ -17,7 +18,11 @@ static er_buildmod_t *er_buildmod_new(char const *filename,
     bmod->size = size;
     bmod->filename = er_strdup(filename);
 
+    bmod->arenas.persistent = er_arena_new(4096);
     bmod->arenas.parse = er_arena_new(4096);
+
+    bmod->toks = NULL;
+    bmod->root = NULL;
 
     return bmod;
 }
@@ -26,7 +31,12 @@ void er_buildmod_delete(er_buildmod_t *bmod) {
     free(bmod->text);
     free(bmod->filename);
     
+    er_arena_delete(bmod->arenas.persistent);
     er_arena_delete(bmod->arenas.parse);
+
+    if (bmod->toks != NULL) {
+        free(bmod->toks);
+    }
 
     free(bmod);
 }
@@ -59,4 +69,15 @@ er_buildmod_t *er_buildmod_read(char const *module) {
     }
 
     return NULL;
+}
+
+er_buildfunc_t *er_buildfunc_new(er_buildmod_t *bmod, er_astnode_t *funcnode) {
+    assert(funcnode->kind == ER_AST_FUNC);
+
+    er_buildfunc_t *bfunc = er_arena_alloc(bmod->arenas.persistent, 
+                                           sizeof(er_buildfunc_t));
+    
+    bfunc->root = funcnode;
+
+    return bfunc;
 }

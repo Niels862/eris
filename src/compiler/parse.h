@@ -5,6 +5,6 @@
 #include "compiler/token.h"
 #include "compiler/ast.h"
 
-er_astnode_t *er_parse(er_buildmod_t *bmod, er_tok_t *toks);
+void er_parse(er_buildmod_t *bmod);
 
 #endif
