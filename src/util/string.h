@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef struct {
-    char const *data;
+    char *data;
     int len;
 } er_str_t;
 

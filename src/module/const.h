@@ -1,6 +1,8 @@
 #ifndef ER_MODULE_CONST_H
 #define ER_MODULE_CONST_H
 
+#include "util/string.h"
+#include "util/error.h"
 #include <stdint.h>
 
 typedef enum {
@@ -10,33 +12,16 @@ typedef enum {
     ER_CONST_FUNCREF,
 } er_consttag_t;
 
-#define ER_CONST_HEADER \
-    uint8_t tag /* = er_consttag_t */
+typedef union {
+    int64_t s64;
+    er_str_t str;
+} er_constdata_t;
 
 typedef struct {
-    ER_CONST_HEADER;
+    er_consttag_t tag;
+    er_constdata_t data;
 } er_const_t;
 
-typedef struct {
-    ER_CONST_HEADER;
-    int64_t s64;
-} er_const_s64_t;
-
-typedef struct {
-    ER_CONST_HEADER;
-    uint16_t size;
-    char str[];
-} er_const_str_t;
-
-typedef struct {
-    ER_CONST_HEADER;
-    uint16_t nameidx;
-} er_const_modref_t;
-
-typedef struct {
-    ER_CONST_HEADER;
-    uint16_t modidx;
-    uint16_t nameidx;
-} er_const_funcref_t;
+void er_const_print(er_const_t *c);
 
 #endif

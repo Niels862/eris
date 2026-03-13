@@ -1,4 +1,5 @@
 #include "module/instr.h"
+#include <stdio.h>
 #include <stddef.h>
 #include <inttypes.h>
 
@@ -56,44 +57,44 @@ int er_format_size(er_instrfmt_t fmt) {
     return -1;
 }
 
-void er_instr_print(size_t at, char const *buf, FILE *file) {
-    er_opcode_t opc = buf[at];
+void er_instr_print(size_t at, uint8_t const *code) {
+    er_opcode_t opc = code[at];
     char const *name = er_opcode_name(opc);
     er_instrfmt_t fmt = er_opcode_format(opc);
 
     switch (fmt) {
         case ER_FMT_NONE: {
-            fprintf(file, "%s\n", name);
+            fprintf(stderr, "%s\n", name);
             break;
         }
 
         case ER_FMT_S16: {
             int16_t value = 0;
-            fprintf(file, "%s %" PRId16 "\n", name, value);
+            fprintf(stderr, "%s %" PRId16 "\n", name, value);
             break;
         }
 
         case ER_FMT_INDEX: {
             uint16_t value = 0;
-            fprintf(file, "%s #%" PRIu16 "\n", name, value);
+            fprintf(stderr, "%s #%" PRIu16 "\n", name, value);
             break;
         }
 
         case ER_FMT_JUMP: {
             int16_t offset = 0;
             size_t address = at + offset;
-            fprintf(file, "%s 0x%04zX\n", name, address);
+            fprintf(stderr, "%s 0x%04zX\n", name, address);
             break;
         }
 
         case ER_FMT_INVALID: {
-            fprintf(file, "(unknown)\n");
+            fprintf(stderr, "(unknown)\n");
             break;
         }
     }
 }
 
-void er_instr_print_with_address(size_t at, char const *buf, FILE *file) {
-    fprintf(file, "%04zX: ", at);
-    er_instr_print(at, buf, file);
+void er_instr_print_with_address(size_t at, uint8_t const *code) {
+    fprintf(stderr, "%04zX: ", at);
+    er_instr_print(at, code);
 }

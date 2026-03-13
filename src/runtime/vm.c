@@ -163,24 +163,8 @@ static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
 }
 
 void er_run(void) {
-    static er_const_s64_t c1 = {
-        .tag = ER_CONST_S64,
-        .s64 = 60,
-    };
-
-    static er_const_t *consttab[] = {
-        (er_const_t *)&c1,
-    };
-
-    static uint8_t const code[] = {
-        0,
-    };
-
     er_vm_t vm;
-    er_vm_init(&vm, code);
-
-    vm.consttab = consttab;
-    vm.nconsts = sizeof(consttab) / sizeof(*consttab);
+    er_vm_init(&vm, NULL);
 
     while (!vm.halt) {
         fprintf(stderr, "%04zx: %s\n", vm.ip, er_opcode_name(vm.code[vm.ip]));

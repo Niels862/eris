@@ -1,7 +1,8 @@
 #ifndef ER_INSTRUCTION_H
 #define ER_INSTRUCTION_H
 
-#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
 
 typedef enum {
     ER_FMT_NONE,
@@ -47,8 +48,8 @@ size_t er_instr_size(er_opcode_t opc);
 
 int er_format_size(er_instrfmt_t fmt);
 
-void er_instr_print(size_t at, char const *buf, FILE *file);
+void er_instr_print(size_t at, uint8_t const *code);
 
-void er_instr_print_with_address(size_t at, char const *buf, FILE *file);
+void er_instr_print_with_address(size_t at, uint8_t const *code);
 
 #endif
