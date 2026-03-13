@@ -50,3 +50,14 @@ void er_irnode_print(er_irnode_t *node) {
             break;
     }
 }
+
+void er_irblock_print(er_irblock_t *block) {
+    fprintf(stderr, "{\n");
+
+    for (size_t i = 0; i < block->n_nodes; i++) {
+        fprintf(stderr, "  ");
+        er_irnode_print(&block->nodes[i]);
+    }
+
+    fprintf(stderr, "}\n");
+}

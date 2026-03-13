@@ -43,4 +43,6 @@ er_irdatakind_t er_ir_kind(er_irtag_t tag);
 
 void er_irnode_print(er_irnode_t *node);
 
+void er_irblock_print(er_irblock_t *block);
+
 #endif

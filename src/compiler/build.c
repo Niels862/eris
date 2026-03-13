@@ -1,4 +1,7 @@
 #include "compiler/build.h"
+#include "compiler/lex.h"
+#include "compiler/parse.h"
+#include "compiler/irgen.h"
 #include "util/file.h"
 #include "util/alloc.h"
 #include "util/string.h"
@@ -9,6 +12,45 @@
 #include <assert.h>
 
 #define ER_PATH_BUFFER_SIZE 4096
+
+er_mod_t **er_build(char const *entry) {
+    er_mod_t **mods = NULL;
+
+    er_buildmod_t *bmod = er_buildmod_read(entry);
+    if (bmod == NULL) {
+        fprintf(stderr, "could not load entry module: '%s'\n", entry);
+        return NULL;
+    }
+
+    er_lex(bmod);
+    if (bmod->toks == NULL) {
+        goto end;
+    }
+
+    er_parse(bmod);
+    if (bmod->root == NULL) {
+        goto end;
+    }
+
+    er_ast_print(bmod->root);
+
+    er_astmod_t *Mod = &bmod->root->data.Mod;
+    for (size_t i = 0; i < Mod->n_funcs; i++) {
+        er_astnode_t *funcnode = Mod->funcs[i];
+        er_str_t *name = &funcnode->data.Func.name;
+
+        er_buildfunc_t *bfunc = er_buildfunc_new(bmod, funcnode);
+
+        fprintf(stderr, "Lowering '%.*s'...\n", name->len, name->data);
+        er_irgen(bmod, bfunc);
+
+        er_buildfunc_delete(bfunc);
+    }    
+
+end:
+    er_buildmod_delete(bmod);
+    return mods;
+}
 
 static er_buildmod_t *er_buildmod_new(char const *filename, 
                                       char *text, size_t size) {
@@ -78,6 +120,14 @@ er_buildfunc_t *er_buildfunc_new(er_buildmod_t *bmod, er_astnode_t *funcnode) {
                                            sizeof(er_buildfunc_t));
     
     bfunc->root = funcnode;
+    bfunc->blocks = NULL;
+    bfunc->n_blocks = 0;
+
+    bfunc->arenas.ir = er_arena_new(256);
 
     return bfunc;
+}
+
+void er_buildfunc_delete(er_buildfunc_t *bfunc) {
+    er_arena_delete(bfunc->arenas.ir);
 }

@@ -11,12 +11,12 @@ typedef struct {
 } er_func_t;
 
 typedef struct {
-    er_const_t *consttab;
-    void **reftab;
-    size_t nconsts;
+    er_const_t *consts;
+    void **refs;
+    size_t n_consts;
 
-    er_func_t *functab;
-    size_t nfuncs;
-} er_module_t;
+    er_func_t *funcs;
+    size_t n_funcs;
+} er_mod_t;
 
 #endif
