@@ -12,9 +12,14 @@ typedef enum {
     ER_CONST_FUNCREF,
 } er_consttag_t;
 
+typedef struct {
+    uint16_t len;
+    char data[1]; /* Flexible array member */
+} er_conststrdata_t;
+
 typedef union {
     int64_t s64;
-    er_str_t str;
+    er_conststrdata_t str;
 } er_constdata_t;
 
 typedef struct {

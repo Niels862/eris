@@ -13,6 +13,8 @@ typedef struct {
     uint16_t col;
 } er_textpos_t;
 
+void er_str_from_cstr(er_str_t *s, char *cs);
+
 char *er_strdup(char const *s);
 
 #endif

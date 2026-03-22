@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
     for (size_t i = 0; mods[i] != NULL; i++) {
         er_mod_print(mods[i]);
-        free(mods[i]);
+        er_mod_delete(mods[i]);
     }
     free(mods);
 

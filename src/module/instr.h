@@ -20,6 +20,7 @@ typedef enum {
     X(LOAD_NULL,        ER_FMT_NONE) \
     X(LOAD_TRUE,        ER_FMT_NONE) \
     X(LOAD_FALSE,       ER_FMT_NONE) \
+    X(LOAD_INT,         ER_FMT_S16) \
     X(LOAD_CONST,       ER_FMT_INDEX) \
     X(POP,              ER_FMT_NONE) \
     X(DUP_TOP,          ER_FMT_NONE) \

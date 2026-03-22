@@ -1,9 +1,233 @@
-#include "codegen.h"
+#include "compiler/codegen.h"
+#include "module/instr.h"
 #include "util/error.h"
 #include "util/alloc.h"
+#include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <assert.h>
 
-void er_codegen_init(er_buildmod_t *bmod) {
-    bmod->mod = er_xmalloc(sizeof(er_mod_t));
-    memset(bmod->mod, 0, sizeof(er_mod_t));
+#define ER_CINSTR_LABEL 0x100
+
+typedef struct {
+    er_opcode_t opc;
+    uint16_t data;
+} er_ginstr_t;
+
+typedef struct {
+    struct {
+        er_const_t **tab;
+        size_t size;
+        size_t cap;
+    } consts;
+
+    struct {
+        er_ginstr_t *code;
+        size_t code_size;
+        size_t code_cap;
+    } func;
+} er_genctx_t;
+
+static void er_genctx_init(er_genctx_t *g) {
+    g->consts.cap = 8;
+    g->consts.size = 0;
+    g->consts.tab = er_xmalloc(g->consts.cap * sizeof(er_const_t *));
+
+    g->func.code_cap = 8;
+    g->func.code_size = 0;
+    g->func.code = er_xmalloc(g->func.code_cap * sizeof(er_ginstr_t));
+}
+
+static void er_genctx_destruct(er_genctx_t *g) {
+    free(g->consts.tab);
+    free(g->func.code);
+}
+
+static void er_genctx_clear_func(er_genctx_t *g) {
+    g->func.code_size = 0;
+}
+
+static void er_genctx_print(er_genctx_t *g) {
+    fprintf(stderr, "{\n");
+
+    for (size_t i = 0; i < g->func.code_size; i++) {
+        er_ginstr_t *instr = &g->func.code[i];
+
+        if (instr->opc == ER_CINSTR_LABEL) {
+            fprintf(stderr, "  .%" PRId16 "\n", 
+                    instr->data);
+        } else {
+            int len = fprintf(stderr, "    %s ", er_opcode_name(instr->opc));
+
+            for (int i = 0; i < 20 - len; i++) {
+                fputc(' ', stderr);
+            }
+
+            fprintf(stderr, "%" PRId16 "\n", instr->data);
+        }
+    }
+
+    fprintf(stderr, "}\n");
+}
+
+static void er_emit(er_genctx_t *g, er_opcode_t opc, uint16_t data) {
+    if (g->func.code_size + 1 > g->func.code_cap) {
+        g->func.code_cap *= 2;
+        g->func.code = er_xrealloc(g->func.code, 
+                                   g->func.code_cap * sizeof(er_ginstr_t));
+    }
+
+    er_ginstr_t *instr = &g->func.code[g->func.code_size];
+    g->func.code_size++;
+
+    instr->opc = opc;
+    instr->data = data;
+}
+
+static uint16_t er_add_const(er_genctx_t *g, er_const_t **c, 
+                             er_consttag_t tag, int datasize) {
+    if (g->consts.cap + 1 > g->consts.size) {
+        g->consts.cap *= 2;
+        g->consts.tab = er_xrealloc(g->consts.tab, 
+                                    g->consts.cap * sizeof(er_const_t *));
+    }
+
+    er_const_t *cc = er_xmalloc(offsetof(er_const_t, data) + datasize);
+    
+    cc->tag = tag;
+    memset(&cc->data, 0, datasize);
+
+    uint16_t idx = g->consts.size;
+    g->consts.tab[idx] = cc;
+    g->consts.size++;
+
+    *c = cc;
+
+    return idx;
+}
+
+static uint16_t er_make_const_str(er_genctx_t *g, er_str_t *s) {
+    er_const_t *c;
+    int datasize = offsetof(er_conststrdata_t, data) + s->len;
+    uint16_t idx = er_add_const(g, &c, ER_CONST_STR, datasize);
+
+    memcpy(&c->data.str.data, s->data, s->len);
+    c->data.str.len = s->len;
+
+    return idx;
+}
+
+static void er_codegen_node(er_genctx_t *g, er_irnode_t *node) {    
+    switch (node->tag) {
+        case ER_IR_PUSHINT: {
+            er_emit(g, ER_OPC_LOAD_INT, node->data.s64);
+            break;
+        }
+
+        case ER_IR_RET: {
+            er_emit(g, ER_OPC_RETURN, 0);
+            break;
+        }
+
+        default:
+            ER_UNHANDLED_SWITCH_VALUE("%d", node->tag);
+    }
+}
+
+static void er_codegen_block(er_genctx_t *g, er_irblock_t *block) {
+    for (size_t i = 0; i < block->n_nodes; i++) {
+        er_codegen_node(g, &block->nodes[i]);
+    }
+}
+
+static inline void er_write_u16(uint16_t u16, uint8_t *buf) {
+    buf[0] = (u16 >> 0) & 0xFF;
+    buf[1] = (u16 >> 8) & 0xFF;
+}
+
+static int er_assemble_instr(er_ginstr_t *instr, uint8_t *code, size_t at) {
+    er_instrfmt_t fmt = er_opcode_format(instr->opc);
+
+    code[at] = instr->opc;
+    switch (fmt) {
+        case ER_FMT_NONE:
+            break;
+
+        case ER_FMT_S16:
+        case ER_FMT_INDEX:
+        case ER_FMT_JUMP:
+            er_write_u16(instr->data, &code[at + 1]);
+            break;
+
+        default:
+            ER_UNHANDLED_SWITCH_VALUE("%d", fmt);
+    }
+
+    return er_instr_size(instr->opc);
+}
+
+static void er_codegen_func(er_genctx_t *g, er_buildfunc_t *bfunc) {
+    assert(g->func.code_size == 0); /* Func is cleared */
+
+    assert(bfunc->n_blocks == 1);
+    er_codegen_block(g, &bfunc->blocks[0]);
+
+    er_genctx_print(g);
+}
+
+static er_func_t *er_assemble_func(er_genctx_t *g) {
+    size_t code_size = 0;
+    for (size_t i = 0; i < g->func.code_size; i++) {
+        er_opcode_t opc = g->func.code[i].opc;
+
+        if (opc != ER_CINSTR_LABEL) {
+            code_size += er_instr_size(opc);
+        }
+    }
+
+    uint8_t *code = er_xmalloc(code_size);
+
+    size_t at = 0;
+    for (size_t i = 0; i < g->func.code_size; i++) {
+        er_opcode_t opc = g->func.code[i].opc;
+
+        if (opc != ER_CINSTR_LABEL) {
+            at += er_assemble_instr(&g->func.code[i], code, at);
+        }
+    }
+
+    assert(code_size == at);
+
+    return er_func_new(0, 0, code, code_size);
+}
+
+static er_mod_t *er_assemble_mod(er_genctx_t *g, uint16_t me, 
+                                 er_func_t **funcs, size_t n_funcs) {
+    er_const_t **consts = g->consts.tab;
+    g->consts.tab = NULL;
+    return er_mod_new(me, consts, g->consts.size, funcs, n_funcs);
+}
+
+void er_codegen_mod(er_buildmod_t *bmod) {
+    er_genctx_t g;
+    er_genctx_init(&g);
+
+    er_str_t name;
+    er_str_from_cstr(&name, bmod->filename);
+    uint16_t me = er_make_const_str(&g, &name);
+
+    er_func_t **funcs = er_xmalloc(bmod->n_bfuncs * sizeof(er_func_t));
+    for (size_t i = 0; i < bmod->n_bfuncs; i++) {
+        er_genctx_clear_func(&g);
+        er_codegen_func(&g, &bmod->bfuncs[i]);
+        funcs[i] = er_assemble_func(&g);
+    }
+
+    bmod->mod = er_assemble_mod(&g, me, funcs, bmod->n_bfuncs);
+
+    er_genctx_destruct(&g);
+}
+
+void er_codegen(er_buildmod_t *bmod) {
+    er_codegen_mod(bmod);
 }

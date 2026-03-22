@@ -19,10 +19,11 @@ static void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode) {
     
     bfunc->root = funcnode;
     bfunc->name = &funcnode->data.Func.name;
-    bfunc->blocks = NULL;
-    bfunc->n_blocks = 0;
 
     bfunc->arenas.ir = er_arena_new(256);
+
+    bfunc->blocks = NULL;
+    bfunc->n_blocks = 0;
 }
 
 static void er_buildfunc_destruct(er_buildfunc_t *bfunc) {
@@ -42,10 +43,11 @@ static er_buildmod_t *er_buildmod_new(char const *filename,
 
     bmod->toks = NULL;
     bmod->root = NULL;
-    bmod->mod = NULL;
 
     bmod->bfuncs = NULL;
     bmod->n_bfuncs = 0;
+
+    bmod->mod = NULL;
 
     return bmod;
 }
@@ -133,7 +135,16 @@ er_mod_t **er_build(char const *entry) {
 
     er_ast_print(bmod->root);
 
+    // TODO: Declaration Phase
+
     er_create_buildfuncs(bmod);
+
+    for (size_t i = 0; i < bmod->n_bfuncs; i++) {
+        er_irgen(bmod, &bmod->bfuncs[i]);
+        // TODO: Type Analysis
+    }
+
+    er_codegen(bmod);
 
     mods = er_xmalloc(2 * sizeof(er_mod_t *));
     mods[0] = bmod->mod;

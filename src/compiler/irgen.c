@@ -87,7 +87,7 @@ static void er_lower_expr(er_genctx_t *g, er_astnode_t *exprnode) {
         }
 
         default:
-            ER_FATAL("Unhandled switch value: %d", exprnode->kind);
+            ER_UNHANDLED_SWITCH_VALUE("%d", exprnode->kind);
     }
 }
 
@@ -109,7 +109,7 @@ static void er_lower_stmt(er_genctx_t *g, er_astnode_t *stmtnode) {
         }
 
         default:
-            ER_FATAL("Unhandled switch value: %d", stmtnode->kind);
+            ER_UNHANDLED_SWITCH_VALUE("%d", stmtnode->kind);
     }
 }
 

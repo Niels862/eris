@@ -13,12 +13,12 @@ typedef struct {
     er_astnode_t *root;
     er_str_t *name;
 
-    er_irblock_t *blocks;
-    size_t n_blocks;
-
     struct {
         er_arena_t *ir;
     } arenas;
+
+    er_irblock_t *blocks;
+    size_t n_blocks;
 } er_buildfunc_t;
 
 typedef struct {
@@ -33,10 +33,11 @@ typedef struct {
 
     er_tok_t *toks;
     er_astnode_t *root;
-    er_mod_t *mod;
 
     er_buildfunc_t *bfuncs;
     size_t n_bfuncs;
+
+    er_mod_t *mod;
 } er_buildmod_t;
 
 er_mod_t **er_build(char const *entry);
