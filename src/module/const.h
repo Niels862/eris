@@ -12,20 +12,22 @@ typedef enum {
     ER_CONST_FUNCREF,
 } er_consttag_t;
 
-typedef struct {
-    uint16_t len;
-    char data[1]; /* Flexible array member */
-} er_conststrdata_t;
-
-typedef union {
-    int64_t s64;
-    er_conststrdata_t str;
-} er_constdata_t;
+#define ER_CONST_HEADER uint8_t tag /* er_consttag_t */
 
 typedef struct {
-    er_consttag_t tag;
-    er_constdata_t data;
+    ER_CONST_HEADER;
 } er_const_t;
+
+typedef struct {
+    ER_CONST_HEADER;
+    uint16_t len;
+    char data[];
+} er_const_str_t;
+
+typedef struct {
+    ER_CONST_HEADER;
+    uint16_t name;
+} er_const_modref_t;
 
 void er_const_print(er_const_t *c);
 

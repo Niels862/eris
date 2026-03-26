@@ -1,6 +1,7 @@
 #include "runtime/vm.h"
 #include "module/instr.h"
 #include "module/const.h"
+#include "util/list.h"
 #include "util/alloc.h"
 #include "util/error.h"
 #include <stdlib.h>
@@ -9,10 +10,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <assert.h>
-
-typedef enum {
-    ER_S64,
-} er_typetag_t;
 
 typedef union {
     int64_t s64;
@@ -23,14 +20,20 @@ typedef struct {
 } er_callframe_t;
 
 typedef struct {
-    er_value_t *stack;
-    uint8_t *stacktags; // = er_typetag_t *
-    size_t stackcap;
-    size_t sp;
+    er_value_t *data;
+    size_t cap;
+    size_t size;
+} er_valuestack_t;
 
-    er_callframe_t *frames;
-    size_t framescap;
-    size_t fp;
+typedef struct {
+    er_callframe_t *data;
+    size_t cap;
+    size_t size;
+} er_callstack_t;
+
+typedef struct {
+    er_valuestack_t values;
+    er_callstack_t frames;
 
     uint8_t const *code;
     size_t ip;
@@ -42,15 +45,9 @@ typedef struct {
 } er_vm_t;
 
 static void er_vm_init(er_vm_t *vm, uint8_t const *code) {
-    vm->stackcap = 4096;
-    vm->stack = er_xmalloc(vm->stackcap * sizeof(er_value_t));
-    vm->stacktags = er_xmalloc(vm->stackcap * sizeof(uint8_t));
-    vm->sp = 0;
-
-    vm->framescap = 32;
-    vm->frames = er_xmalloc(vm->framescap * sizeof(er_callframe_t));
-    vm->fp = 0;
-
+    ER_LIST_INIT(&vm->values, 4096);
+    ER_LIST_INIT(&vm->frames, 64);
+    
     vm->code = code;
     vm->ip = 0;
 
@@ -61,9 +58,7 @@ static void er_vm_init(er_vm_t *vm, uint8_t const *code) {
 }
 
 static void er_vm_destruct(er_vm_t *vm) {
-    free(vm->stack);
-    free(vm->stacktags);
-    free(vm->frames);
+    ER_UNUSED(vm);
 }
 
 static inline uint16_t er_read_u16_arg(er_vm_t *vm) {
@@ -74,85 +69,48 @@ static inline uint16_t er_read_u16_arg(er_vm_t *vm) {
 
 #define ER_OPCODE_HANDLER(n) static inline void er_##n(er_vm_t *vm)
 
-ER_OPCODE_HANDLER(NONE) {
-    ER_UNUSED(vm);
-}
+#define ER_UNIMPLEMENTED_OPCODE_HANDLER(n) \
+        ER_OPCODE_HANDLER(n) { ER_UNUSED(vm); ER_UNIMPLEMENTED_FUNCTION(); }
 
-ER_OPCODE_HANDLER(LOAD_LOCAL)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(NONE)
 
-ER_OPCODE_HANDLER(STORE_LOCAL)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_LOCAL)
 
-ER_OPCODE_HANDLER(LOAD_NULL)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(STORE_LOCAL)
 
-ER_OPCODE_HANDLER(LOAD_TRUE)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_NULL)
 
-ER_OPCODE_HANDLER(LOAD_FALSE)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_TRUE)
 
-ER_OPCODE_HANDLER(LOAD_INT)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_FALSE)
 
-ER_OPCODE_HANDLER(LOAD_CONST)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_INT)
 
-ER_OPCODE_HANDLER(POP)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_CONST)
 
-ER_OPCODE_HANDLER(DUP_TOP)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(POP)
 
-ER_OPCODE_HANDLER(INVOKE)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(DUP_TOP)
 
-ER_OPCODE_HANDLER(RETURN)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(INVOKE)
 
-ER_OPCODE_HANDLER(ASSERT)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(RETURN)
 
-ER_OPCODE_HANDLER(JUMP_IF_TRUE)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(ASSERT)
 
-ER_OPCODE_HANDLER(JUMP_IF_FALSE)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(JUMP_IF_TRUE)
 
-ER_OPCODE_HANDLER(JUMP)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(JUMP_IF_FALSE)
 
-ER_OPCODE_HANDLER(IADD)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(JUMP)
 
-ER_OPCODE_HANDLER(ISUB)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(IADD)
 
-ER_OPCODE_HANDLER(EQUALS)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(ISUB)
 
-ER_OPCODE_HANDLER(NOT_EQUALS)  {
-    ER_UNUSED(vm);
-}
+ER_UNIMPLEMENTED_OPCODE_HANDLER(EQUALS)
+
+ER_UNIMPLEMENTED_OPCODE_HANDLER(NOT_EQUALS)
 
 static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
     switch (opc) {
@@ -166,9 +124,15 @@ static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
     }
 }
 
-void er_run(void) {
+void er_run(er_mod_t **mods) {
+    ER_UNUSED(mods);
+
+    uint8_t code[] = {
+        ER_OPC_LOAD_LOCAL,
+    };
+
     er_vm_t vm;
-    er_vm_init(&vm, NULL);
+    er_vm_init(&vm, code);
 
     while (!vm.halt) {
         fprintf(stderr, "%04zx: %s\n", vm.ip, er_opcode_name(vm.code[vm.ip]));

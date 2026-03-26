@@ -1,4 +1,5 @@
 #include "compiler/build.h"
+#include "runtime/vm.h"
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
@@ -14,6 +15,11 @@ int main(int argc, char *argv[]) {
 
     for (size_t i = 0; mods[i] != NULL; i++) {
         er_mod_print(mods[i]);
+    }
+
+    er_run(mods);
+
+    for (size_t i = 0; mods[i] != NULL; i++) {
         er_mod_delete(mods[i]);
     }
     free(mods);

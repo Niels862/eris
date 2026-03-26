@@ -13,7 +13,11 @@ typedef struct {
 } er_func_t;
 
 typedef struct {
+    // Index of module reference in constant table. Always 0. 
     uint16_t me;
+
+    // Index of module entry point function in constant table, 0 if not defined
+    uint16_t entry;
 
     er_const_t **consts;
     size_t n_consts;

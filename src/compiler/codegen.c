@@ -84,35 +84,35 @@ static void er_emit(er_genctx_t *g, er_opcode_t opc, uint16_t data) {
     instr->data = data;
 }
 
-static uint16_t er_add_const(er_genctx_t *g, er_const_t **c, 
-                             er_consttag_t tag, int datasize) {
+static uint16_t er_add_const(er_genctx_t *g, void *c, 
+                             er_consttag_t tag, int size) {
     if (g->consts.cap + 1 > g->consts.size) {
         g->consts.cap *= 2;
         g->consts.tab = er_xrealloc(g->consts.tab, 
                                     g->consts.cap * sizeof(er_const_t *));
     }
 
-    er_const_t *cc = er_xmalloc(offsetof(er_const_t, data) + datasize);
+    er_const_t *cc = er_xmalloc(size);
     
+    memset(cc, 0, size);
     cc->tag = tag;
-    memset(&cc->data, 0, datasize);
 
     uint16_t idx = g->consts.size;
     g->consts.tab[idx] = cc;
     g->consts.size++;
 
-    *c = cc;
+    *(er_const_t **)c = cc;
 
     return idx;
 }
 
 static uint16_t er_make_const_str(er_genctx_t *g, er_str_t *s) {
-    er_const_t *c;
-    int datasize = offsetof(er_conststrdata_t, data) + s->len;
-    uint16_t idx = er_add_const(g, &c, ER_CONST_STR, datasize);
+    er_const_str_t *str;
+    uint16_t idx = er_add_const(g, &str, ER_CONST_STR, 
+                                sizeof(er_const_str_t) + s->len);
 
-    memcpy(&c->data.str.data, s->data, s->len);
-    c->data.str.len = s->len;
+    memcpy(&str->data, s->data, s->len);
+    str->len = s->len;
 
     return idx;
 }
@@ -175,6 +175,20 @@ static void er_codegen_func(er_genctx_t *g, er_buildfunc_t *bfunc) {
     er_genctx_print(g);
 }
 
+static uint16_t er_generate_me(er_genctx_t *g, er_buildmod_t *bmod) {
+    er_const_modref_t *modref;
+    uint16_t me = er_add_const(g, &modref, ER_CONST_MODREF, 
+                               sizeof(er_const_modref_t));
+
+    assert(me == 0);
+
+    er_str_t name;
+    er_str_from_cstr(&name, bmod->filename);
+    modref->name = er_make_const_str(g, &name);
+
+    return me;
+}
+
 static er_func_t *er_assemble_func(er_genctx_t *g) {
     size_t code_size = 0;
     for (size_t i = 0; i < g->func.code_size; i++) {
@@ -212,9 +226,7 @@ void er_codegen_mod(er_buildmod_t *bmod) {
     er_genctx_t g;
     er_genctx_init(&g);
 
-    er_str_t name;
-    er_str_from_cstr(&name, bmod->filename);
-    uint16_t me = er_make_const_str(&g, &name);
+    uint16_t me = er_generate_me(&g, bmod);
 
     er_func_t **funcs = er_xmalloc(bmod->n_bfuncs * sizeof(er_func_t));
     for (size_t i = 0; i < bmod->n_bfuncs; i++) {

@@ -25,6 +25,9 @@ static inline void eprintf(char const *format, ...) {
 #define ER_UNHANDLED_SWITCH_VALUE(format, value) \
         ER_FATAL("unhandled switch value: " format "\n", value)
 
+#define ER_UNIMPLEMENTED_FUNCTION() \
+        ER_FATAL("%s is not implemented\n", __func__)
+
 __attribute__((noreturn))
 void er_fatal(char const *file, int line, char const *format, ...);
 
