@@ -3,18 +3,21 @@
 
 #include "util/alloc.h"
 
+#define ER_LIST_ELEM_SIZE(list) (sizeof(*(list)->data))
+
 #define ER_LIST_INIT(list, init_size) \
     do { \
         (list)->cap = (init_size); \
         (list)->size = 0; \
-        (list)->data = er_xmalloc((init_size) * sizeof(*((list)->data))); \
+        (list)->data = er_xmalloc((init_size) * ER_LIST_ELEM_SIZE(list)); \
     } while (0)
 
 #define ER_LIST_RESERVE_N(list, add_n) \
     do { \
         if ((list)->size + add_n > (list)->cap) { \
             do { (list)->cap *= 2; } while ((list)->size + add_n < (list)->cap); \
-            (list)->data = er_xrealloc((list)->data, (list)->cap); \
+            (list)->data = er_xrealloc( \
+                (list)->data, (list)->cap * ER_LIST_ELEM_SIZE(list)); \
         } \
     } while (0)
 
@@ -22,7 +25,8 @@
     do { \
         if ((list)->size + 1 > (list)->cap) { \
             (list)->cap *= 2; \
-            (list)->data = er_xrealloc((list)->data, (list)->cap); \
+            (list)->data = er_xrealloc( \
+                (list)->data, (list)->cap * ER_LIST_ELEM_SIZE(list)); \
         } \
     } while (0)
 
