@@ -189,7 +189,7 @@ static uint16_t er_generate_me(er_genctx_t *g, er_buildmod_t *bmod) {
     return me;
 }
 
-static er_func_t *er_assemble_func(er_genctx_t *g) {
+static er_func_t *er_assemble_func(er_genctx_t *g, er_buildfunc_t *bfunc) {
     size_t code_size = 0;
     for (size_t i = 0; i < g->func.code_size; i++) {
         er_opcode_t opc = g->func.code[i].opc;
@@ -212,14 +212,15 @@ static er_func_t *er_assemble_func(er_genctx_t *g) {
 
     assert(code_size == at);
 
-    return er_func_new(0, 0, code, code_size);
+    er_constidx_t name = er_make_const_str(g, bfunc->name);
+    return er_func_new(name, 0, code, code_size);
 }
 
-static er_mod_t *er_assemble_mod(er_genctx_t *g, uint16_t me, 
+static er_mod_t *er_assemble_mod(er_genctx_t *g, er_constidx_t me, uint16_t id,
                                  er_func_t **funcs, size_t n_funcs) {
     er_const_t **consts = g->consts.tab;
     g->consts.tab = NULL;
-    return er_mod_new(me, consts, g->consts.size, funcs, n_funcs);
+    return er_mod_new(me, id, consts, g->consts.size, funcs, n_funcs);
 }
 
 void er_codegen_mod(er_buildmod_t *bmod) {
@@ -230,12 +231,15 @@ void er_codegen_mod(er_buildmod_t *bmod) {
 
     er_func_t **funcs = er_xmalloc(bmod->n_bfuncs * sizeof(er_func_t));
     for (size_t i = 0; i < bmod->n_bfuncs; i++) {
+        er_buildfunc_t *bfunc = &bmod->bfuncs[i];
+
         er_genctx_clear_func(&g);
-        er_codegen_func(&g, &bmod->bfuncs[i]);
-        funcs[i] = er_assemble_func(&g);
+        
+        er_codegen_func(&g, bfunc);
+        funcs[i] = er_assemble_func(&g, bfunc);
     }
 
-    bmod->mod = er_assemble_mod(&g, me, funcs, bmod->n_bfuncs);
+    bmod->mod = er_assemble_mod(&g, me, 0, funcs, bmod->n_bfuncs);
 
     er_genctx_destruct(&g);
 }
