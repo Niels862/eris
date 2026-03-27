@@ -55,7 +55,7 @@ typedef struct {
 } er_astbinop_t;
 
 typedef struct {
-    uint64_t val;
+    int64_t val;
 } er_astint_t;
 
 typedef union {

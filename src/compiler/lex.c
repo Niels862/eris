@@ -163,7 +163,7 @@ static void er_lex_number(er_lexctx_t *ctx) {
         c = er_lex_next(ctx);
     } while (isalnum(c) || c == '_');
 
-    er_lex_emit(ctx, ER_TOK_NUMBER);
+    er_lex_emit(ctx, ER_TOK_INTEGER);
 }
 
 static void er_lex_special(er_lexctx_t *ctx) {
@@ -220,7 +220,7 @@ void er_lex(er_buildmod_t *bmod) {
 
         if (isalpha(c) || c == '_') {
             er_lex_identifier(&ctx);
-        } else if (isalnum(c)) {
+        } else if (isdigit(c)) {
             er_lex_number(&ctx);
         } else if (er_is_special_character(c)) {
             er_lex_special(&ctx);

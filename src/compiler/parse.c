@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -156,18 +157,80 @@ static void er_panic_stmt(er_parsectx_t *p) {
     } while (p->curr->kind != ER_TOK_ENDOFINPUT);
 }
 
+#define ER_INTEGER_BUF_STATIC_SIZE 64
+
+static int er_parse_base_modifier(er_str_t *s) {
+    if (s->len < 2) {
+        return 10;
+    }
+
+    if (s->data[0] == '0') {
+        if (s->data[1] == 'x' || s->data[1] == 'X') {
+            er_str_ltrim(s, 2);
+            return 16;
+        }
+
+        if (s->data[1] == 'b' || s->data[1] == 'B') {
+            er_str_ltrim(s, 2);
+            return 2;
+        }
+    }
+
+    return 10;
+}
+
 static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
-    er_tok_t *tok = er_expect(p, ER_TOK_NUMBER);
+    char static_buf[ER_INTEGER_BUF_STATIC_SIZE];
+
+    char *buf = static_buf;
+    size_t buf_size = 0;
+
+    if (er_accept(p, ER_TOK_MINUS)) {
+        buf[0] = '-';
+        buf_size = 1;
+    }
+
+    er_tok_t *tok = er_expect(p, ER_TOK_INTEGER);
     if (tok == NULL) {
         return NULL;
     }
 
-    er_textpos_t pos = tok->pos;
+    er_str_t str = tok->text;
+
+    int base = er_parse_base_modifier(&str);
+
+    if (buf_size + tok->text.len + 1 > ER_INTEGER_BUF_STATIC_SIZE) {
+        buf = er_arena_realloc(p->scratch, buf, buf_size, tok->text.len, 1);
+    }
+
+    for (int i = 0; i < str.len; i++) {
+        char c = str.data[i];
+        if (isalnum(c)) {
+            if (c == '0' && i == 0) {
+                er_err(p->bmod, tok->pos, 
+                       "leading zero in integer literal is disallowed");
+                return NULL;
+            }
+
+            buf[buf_size] = c;
+            buf_size++;
+        } else if (c == '_') {
+            if (i == str.len - 1) {
+                er_err(p->bmod, tok->pos,
+                       "trailing underscore in integer literal is disallowed");
+                return NULL;
+            }
+        } else {
+            ER_FATAL("unexpected character in integer literal\n");
+        }
+    }
+
+    buf[buf_size] = '\0';
 
     char *end;
-    uint64_t val = strtoull(tok->text.data, &end, 10);
+    int64_t val = strtoll(buf, &end, base);
 
-    if (end != tok->text.data + tok->text.len) {
+    if (end != buf + buf_size) {
         er_err(p->bmod, tok->pos, "malformed integer literal");
         return NULL;
     }
@@ -177,7 +240,7 @@ static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
         return NULL;
     }
 
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, pos, Int);
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, tok->pos, Int);
     n->data.Int.val = val;
 
     return n;

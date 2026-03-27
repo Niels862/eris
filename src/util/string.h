@@ -17,4 +17,9 @@ void er_str_from_cstr(er_str_t *s, char *cs);
 
 char *er_strdup(char const *s);
 
+static inline void er_str_ltrim(er_str_t *s, int n) {
+    s->data += n;
+    s->len -= n;
+}
+
 #endif

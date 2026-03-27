@@ -112,7 +112,7 @@ static void er_print_node(char const *attr,
         case ER_AST_INT: {
             er_astint_t *Int = &data->Int;
             er_print_header("value", ndepth);
-            fprintf(stderr, "%" PRIu64 "\n", Int->val);
+            fprintf(stderr, "%" PRId64 "\n", Int->val);
             break;
         }
 

@@ -115,11 +115,13 @@ void *er_arena_realloc(er_arena_t *arena, void *p,
 void *er_arena_aligned_realloc(er_arena_t *arena, void *p, size_t align,
                        size_t nmemb_old, size_t nmemb_new, size_t membsize) {
     assert(nmemb_old <= nmemb_new);
-    assert(nmemb_old > 0);
     
     void *p2 = er_arena_aligned_alloc(arena, nmemb_new * membsize, align);
-    memcpy(p2, p, nmemb_old * membsize);
-    er_invalidate(p, nmemb_old * membsize);
+
+    if (nmemb_old > 0) {
+        memcpy(p2, p, nmemb_old * membsize);
+        er_invalidate(p, nmemb_old * membsize);
+    }
 
     return p2;
 }

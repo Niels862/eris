@@ -22,7 +22,7 @@
 
 #define ER_OTHER_TOKENS(X) \
         X(IDENTIFIER, "") \
-        X(NUMBER, "") \
+        X(INTEGER, "") \
         X(ENDOFINPUT, "")
 
 #define ER_TOKENS(X) \
