@@ -96,8 +96,8 @@ static void er_vm_print(er_vm_t *vm) {
 }
 
 static inline uint16_t er_read_u16_arg(er_vm_t *vm) {
-    uint8_t hi = vm->code[++vm->ip];
-    uint8_t lo = vm->code[++vm->ip];
+    uint8_t hi = vm->code[vm->ip++];
+    uint8_t lo = vm->code[vm->ip++];
     return (hi << 8) | lo;
 }
 
@@ -221,6 +221,9 @@ void er_run(er_mod_t **mods) {
 
     er_call_entry(&vm, mods[0]);
     er_loop(&vm);
+
+    fprintf(stderr, "On exit: ");
+    er_vm_print(&vm);
 
     er_vm_destruct(&vm);
 }
