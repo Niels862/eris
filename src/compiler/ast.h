@@ -10,12 +10,25 @@
     X(MOD) \
     X(FUNC) \
     X(RET) \
+    X(BINOP) \
     X(INT)
 
 #define X(n) ER_AST_##n,
 typedef enum {
     ER_AST_NODES(X)
 } er_astkind_t;
+#undef X
+
+#define ER_BINOPS(X) \
+    X(ADD) \
+    X(SUB) \
+    X(MUL) \
+    X(DIV)
+
+#define X(n) ER_BINOP_##n,
+typedef enum {
+    ER_BINOPS(X)
+} er_binop_t;
 #undef X
 
 typedef struct er_astnode_t er_astnode_t;
@@ -36,6 +49,12 @@ typedef struct {
 } er_astret_t;
 
 typedef struct {
+    er_binop_t op;
+    er_astnode_t *left;
+    er_astnode_t *right;
+} er_astbinop_t;
+
+typedef struct {
     uint64_t val;
 } er_astint_t;
 
@@ -44,6 +63,7 @@ typedef union {
     er_astfunc_t Func;
     er_astret_t Ret;
     er_astint_t Int;
+    er_astbinop_t BinOp;
 } er_astdata_t;
 
 struct er_astnode_t {
@@ -51,6 +71,8 @@ struct er_astnode_t {
     er_textpos_t pos;
     er_astdata_t data;
 };
+
+char const *er_binop_name(er_binop_t op);
 
 void er_ast_print(er_astnode_t *n);
 

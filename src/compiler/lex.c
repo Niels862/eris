@@ -54,6 +54,20 @@ static bool er_is_special_character(char c) {
         case '[':
         case ']':
         case ';':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
+        case '&':
+        case '|':
+        case '^':
+        case '~':
+        case '?':
+        case '>':
+        case '<':
+        case '!':
+        case '=':
             return true;
 
         default:

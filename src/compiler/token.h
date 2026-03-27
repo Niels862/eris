@@ -14,7 +14,11 @@
         X(RBRACE, "}") \
         X(LBRACKET, "[") \
         X(RBRACKET, "]") \
-        X(SEMICOLON, ";")
+        X(SEMICOLON, ";") \
+        X(PLUS, "+") \
+        X(MINUS, "-") \
+        X(SLASH, "/") \
+        X(ASTERISK, "*") \
 
 #define ER_OTHER_TOKENS(X) \
         X(IDENTIFIER, "") \

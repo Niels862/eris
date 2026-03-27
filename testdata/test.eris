@@ -1,4 +1,3 @@
-# Function
 Int main() {
-    return 67;
+    return 67 + 2;
 }

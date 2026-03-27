@@ -1,5 +1,6 @@
 #include "compiler/ast.h"
 #include "util/error.h"
+#include <inttypes.h>
 #include <assert.h>
 
 #define X(n) [ER_AST_##n] = #n,
@@ -11,6 +12,19 @@ static const char * const er_ast_names[] = {
 static char const *er_ast_name(er_astkind_t kind) {
     if (kind < sizeof(er_ast_names) / sizeof(*er_ast_names)) {
         return er_ast_names[kind];
+    }
+    return NULL;
+}
+
+#define X(n) [ER_BINOP_##n] = #n,
+static const char * const er_binop_names[] = {
+    ER_BINOPS(X)
+};
+#undef X
+
+char const *er_binop_name(er_binop_t op) {
+    if (op < sizeof(er_binop_names) / sizeof(*er_binop_names)) {
+        return er_binop_names[op];
     }
     return NULL;
 }
@@ -95,8 +109,20 @@ static void er_print_node(char const *attr,
             break;
         }
 
-        case ER_AST_INT:
+        case ER_AST_INT: {
+            er_astint_t *Int = &data->Int;
+            er_print_header("value", ndepth);
+            fprintf(stderr, "%" PRIu64 "\n", Int->val);
             break;
+        }
+
+        case ER_AST_BINOP: {
+            er_astbinop_t *BinOp = &data->BinOp;
+            er_print_header("op", ndepth);
+            fprintf(stderr, "%s\n", er_binop_name(BinOp->op));
+            er_print_node("left", BinOp->left, ndepth);
+            er_print_node("right", BinOp->right, ndepth);
+        }
     }
 
     er_print_indent(depth);

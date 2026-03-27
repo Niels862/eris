@@ -156,7 +156,7 @@ static void er_panic_stmt(er_parsectx_t *p) {
     } while (p->curr->kind != ER_TOK_ENDOFINPUT);
 }
 
-static er_astnode_t *er_parse_value(er_parsectx_t *p) {
+static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
     er_tok_t *tok = er_expect(p, ER_TOK_NUMBER);
     if (tok == NULL) {
         return NULL;
@@ -183,8 +183,77 @@ static er_astnode_t *er_parse_value(er_parsectx_t *p) {
     return n;
 }
 
+static er_astnode_t *er_parse_value(er_parsectx_t *p) {
+    return er_parse_integer(p);
+}
+
+typedef struct {
+    er_tokkind_t kind;
+    int op; /* unop or binop */
+} er_opspec_t;
+
+static er_tok_t *er_find_op(er_parsectx_t *p, er_opspec_t const *ops, 
+                            size_t n_ops, int *op) {
+    er_tokkind_t kind = p->curr->kind;
+    
+    for (size_t i = 0; i < n_ops; i++) {
+        if (ops[i].kind == kind) {
+            *op = ops[i].op;
+            return er_consume(p);
+        }
+    }
+
+    return NULL;
+}
+
+static er_astnode_t *er_parse_leftop(er_parsectx_t *p, 
+                                     er_opspec_t const *ops, 
+                                     size_t n_ops, 
+                                     er_astnode_t *(*next)(er_parsectx_t *)) {
+    er_astnode_t *left = next(p);
+    if (left == NULL) {
+        return NULL;
+    }
+
+    int op;
+    er_tok_t *tok;
+    while ((tok = er_find_op(p, ops, n_ops, &op)) != NULL) {
+        er_astnode_t *right = next(p);
+        if (right == NULL) {
+            return NULL;
+        }
+
+        er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_BINOP, tok->pos, BinOp);
+        n->data.BinOp.op = op;
+        n->data.BinOp.left = left;
+        n->data.BinOp.right = right;
+
+        left = n;
+    }
+
+    return left;
+}
+
+static er_astnode_t *er_parse_mul_expr(er_parsectx_t *p) {
+    static const er_opspec_t ops[] = {
+        { ER_TOK_ASTERISK,  ER_BINOP_MUL },
+        { ER_TOK_SLASH,     ER_BINOP_DIV },
+    };
+
+    return er_parse_leftop(p, ops, 2, er_parse_value);
+}
+
+static er_astnode_t *er_parse_add_expr(er_parsectx_t *p) {
+    static const er_opspec_t ops[] = {
+        { ER_TOK_PLUS,      ER_BINOP_ADD },
+        { ER_TOK_MINUS,     ER_BINOP_SUB },
+    };
+
+    return er_parse_leftop(p, ops, 2, er_parse_mul_expr);
+}
+
 static er_astnode_t *er_parse_expr(er_parsectx_t *p) {
-    return er_parse_value(p);
+    return er_parse_add_expr(p);
 }
 
 static er_astnode_t *er_parse_return_stmt(er_parsectx_t *p) {
