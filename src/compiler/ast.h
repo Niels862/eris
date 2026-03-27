@@ -3,6 +3,7 @@
 
 #include "util/string.h"
 #include <stddef.h>
+#include <stdint.h>
 
 #define ER_AST_NODES(X) \
     X(NONE) \
@@ -35,7 +36,7 @@ typedef struct {
 } er_astret_t;
 
 typedef struct {
-    int64_t val;
+    uint64_t val;
 } er_astint_t;
 
 typedef union {

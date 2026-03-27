@@ -2,6 +2,7 @@
 #include "module/instr.h"
 #include "module/const.h"
 #include "util/list.h"
+#include "util/serial.h"
 #include "util/alloc.h"
 #include "util/error.h"
 #include <stdlib.h>
@@ -95,10 +96,10 @@ static void er_vm_print(er_vm_t *vm) {
     fprintf(stderr, "}\n");
 }
 
-static inline uint16_t er_read_u16_arg(er_vm_t *vm) {
-    uint8_t hi = vm->code[vm->ip++];
-    uint8_t lo = vm->code[vm->ip++];
-    return (hi << 8) | lo;
+static inline uint16_t er_read_arg(er_vm_t *vm) {
+    uint16_t arg = er_read_u16(&vm->code[vm->ip]);
+    vm->ip += 2;
+    return arg;
 }
 
 static void er_call(er_vm_t *vm, er_func_t *func) {
@@ -158,7 +159,7 @@ ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_TRUE)
 ER_UNIMPLEMENTED_OPCODE_HANDLER(LOAD_FALSE)
 
 ER_OPCODE_HANDLER(LOAD_INT) {
-    int64_t s64 = (int16_t)er_read_u16_arg(vm);
+    int64_t s64 = (int16_t)er_read_arg(vm);
     vm->values.data[vm->values.size++].s64 = s64;
 }
 
@@ -197,8 +198,7 @@ static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
         #undef X
         
         default:
-            fprintf(stderr, "unhandled opcode: %d\n", opc);
-            abort();
+            ER_UNHANDLED_SWITCH_VALUE("%" PRIu8, opc);
     }
 }
 

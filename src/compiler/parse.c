@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <errno.h>
 
 static er_astdata_t const er_dummy_astdata;
 
@@ -162,7 +163,19 @@ static er_astnode_t *er_parse_value(er_parsectx_t *p) {
     }
 
     er_textpos_t pos = tok->pos;
-    int64_t val = 0;
+
+    char *end;
+    uint64_t val = strtoull(tok->text.data, &end, 10);
+
+    if (end != tok->text.data + tok->text.len) {
+        er_err(p->bmod, tok->pos, "malformed integer literal");
+        return NULL;
+    }
+
+    if (errno == ERANGE) {
+        er_err(p->bmod, tok->pos, "integer literal out of range");
+        return NULL;
+    }
 
     er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_INT, pos, Int);
     n->data.Int.val = val;

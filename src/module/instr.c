@@ -1,4 +1,5 @@
 #include "module/instr.h"
+#include "util/serial.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <inttypes.h>
@@ -69,19 +70,19 @@ void er_instr_print(size_t at, uint8_t const *code) {
         }
 
         case ER_FMT_S16: {
-            int16_t value = 0;
+            int16_t value = er_read_u16(code + 1);
             fprintf(stderr, "%s %" PRId16 "\n", name, value);
             break;
         }
 
         case ER_FMT_INDEX: {
-            uint16_t value = 0;
+            uint16_t value = er_read_u16(code + 1);
             fprintf(stderr, "%s #%" PRIu16 "\n", name, value);
             break;
         }
 
         case ER_FMT_JUMP: {
-            int16_t offset = 0;
+            int16_t offset = er_read_u16(code + 1);
             size_t address = at + offset;
             fprintf(stderr, "%s 0x%04zX\n", name, address);
             break;

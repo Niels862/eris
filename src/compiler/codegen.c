@@ -1,7 +1,8 @@
 #include "compiler/codegen.h"
 #include "module/instr.h"
-#include "util/error.h"
 #include "util/alloc.h"
+#include "util/serial.h"
+#include "util/error.h"
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
@@ -140,11 +141,6 @@ static void er_codegen_block(er_genctx_t *g, er_irblock_t *block) {
     }
 }
 
-static inline void er_write_u16(uint16_t u16, uint8_t *buf) {
-    buf[0] = (u16 >> 0) & 0xFF;
-    buf[1] = (u16 >> 8) & 0xFF;
-}
-
 static int er_assemble_instr(er_ginstr_t *instr, uint8_t *code, size_t at) {
     er_instrfmt_t fmt = er_opcode_format(instr->opc);
 
@@ -156,7 +152,7 @@ static int er_assemble_instr(er_ginstr_t *instr, uint8_t *code, size_t at) {
         case ER_FMT_S16:
         case ER_FMT_INDEX:
         case ER_FMT_JUMP:
-            er_write_u16(instr->data, &code[at + 1]);
+            er_write_u16(&code[at + 1], instr->data);
             break;
 
         default:
@@ -234,7 +230,7 @@ void er_codegen_mod(er_buildmod_t *bmod) {
         er_buildfunc_t *bfunc = &bmod->bfuncs[i];
 
         er_genctx_clear_func(&g);
-        
+
         er_codegen_func(&g, bfunc);
         funcs[i] = er_assemble_func(&g, bfunc);
     }
