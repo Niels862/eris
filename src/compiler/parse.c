@@ -203,13 +203,13 @@ static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
         buf = er_arena_realloc(p->scratch, buf, buf_size, tok->text.len, 1);
     }
 
+    bool leading_zero = false;
+
     for (int i = 0; i < str.len; i++) {
         char c = str.data[i];
         if (isalnum(c)) {
             if (c == '0' && i == 0) {
-                er_err(p->bmod, tok->pos, 
-                       "leading zero in integer literal is disallowed");
-                return NULL;
+                leading_zero = true;
             }
 
             buf[buf_size] = c;
@@ -237,6 +237,12 @@ static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
 
     if (errno == ERANGE) {
         er_err(p->bmod, tok->pos, "integer literal out of range");
+        return NULL;
+    }
+
+    if (val != 0 && leading_zero) {
+        er_err(p->bmod, tok->pos, 
+               "leading zero in integer literal is disallowed");
         return NULL;
     }
 

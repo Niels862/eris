@@ -130,6 +130,34 @@ static void er_codegen_node(er_genctx_t *g, er_irnode_t *node) {
             break;
         }
 
+        case ER_IR_BINOP: {
+            er_opcode_t opc;
+
+            switch (node->data.binop) {
+                case ER_BINOP_ADD:  
+                    opc = ER_OPC_ADD_INT; 
+                    break;
+
+                case ER_BINOP_SUB:  
+                    opc = ER_OPC_SUB_INT; 
+                    break;
+
+                case ER_BINOP_MUL:
+                    opc = ER_OPC_MUL_INT;
+                    break;
+                    
+                case ER_BINOP_DIV:
+                    opc = ER_OPC_DIV_INT;
+                    break;
+
+                default:
+                    ER_UNHANDLED_SWITCH_VALUE("%d", node->data.binop);
+            }
+
+            er_emit(g, opc, 0);
+            break;
+        }
+
         default:
             ER_UNHANDLED_SWITCH_VALUE("%d", node->tag);
     }

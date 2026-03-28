@@ -1,4 +1,4 @@
-#include "ir.h"
+#include "compiler/ir.h"
 #include <stdio.h>
 #include <inttypes.h>
 #include <assert.h>
@@ -48,6 +48,9 @@ void er_irnode_print(er_irnode_t *node) {
         case ER_IRDATA_S64:
             fprintf(stderr, "%" PRId64 "\n", node->data.s64);
             break;
+
+        case ER_IRDATA_BINOP:
+            fprintf(stderr, "%s\n", er_binop_name(node->data.binop));
     }
 }
 

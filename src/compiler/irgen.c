@@ -47,8 +47,11 @@ static void er_genctx_print(er_genctx_t *g) {
     }
 }
 
-static er_irnode_t *er_emit(er_genctx_t *g, er_irtag_t tag, 
-                            er_textpos_t pos) {
+static er_irnode_t *er_emit(er_genctx_t *g, er_irtag_t tag,
+                            er_irdatakind_t datakind, er_textpos_t pos) {
+    assert(er_ir_kind(tag) == datakind);
+    ER_UNUSED(datakind);
+    
     if (g->code_size + 1 > g->code_cap) {
         g->code_cap *= 2;
         g->code = er_xrealloc(g->code, g->code_size * sizeof(er_irnode_t));
@@ -65,21 +68,35 @@ static er_irnode_t *er_emit(er_genctx_t *g, er_irtag_t tag,
 
 static void er_emit_NONE(er_genctx_t *g, er_irtag_t tag, er_textpos_t pos) {
     assert(er_ir_kind(tag) == ER_IRDATA_NONE);
-    er_emit(g, tag, pos);
+    er_emit(g, tag, ER_IRDATA_NONE, pos);
 }
 
 static void er_emit_S64(er_genctx_t *g, er_irtag_t tag, er_textpos_t pos, 
                         int64_t s64) {
-    assert(er_ir_kind(tag) == ER_IRDATA_S64);
-    er_irnode_t *node = er_emit(g, tag, pos);
-    node->tag = tag;
+    er_irnode_t *node = er_emit(g, tag, ER_IRDATA_S64, pos);
     node->data.s64 = s64;
+}
+
+static void er_emit_BINOP(er_genctx_t *g, er_irtag_t tag, er_textpos_t pos, 
+                          er_binop_t binop) {
+    er_irnode_t *node = er_emit(g, tag, ER_IRDATA_BINOP, pos);
+    node->data.binop = binop;
 }
 
 static void er_lower_expr(er_genctx_t *g, er_astnode_t *exprnode) {
     er_textpos_t pos = exprnode->pos;
 
     switch (exprnode->kind) {
+        case ER_AST_BINOP: {
+            er_astbinop_t *BinOp = &exprnode->data.BinOp;
+
+            er_lower_expr(g, BinOp->left);
+            er_lower_expr(g, BinOp->right);
+
+            er_emit_BINOP(g, ER_IR_BINOP, pos, BinOp->op);
+            break;
+        }
+
         case ER_AST_INT: {
             er_astint_t *Int = &exprnode->data.Int;
             er_emit_S64(g, ER_IR_PUSHINT, pos, Int->val);

@@ -64,6 +64,8 @@ static void er_vm_init(er_vm_t *vm) {
     vm->halt = false;
 }
 
+#define VM_PEEK(n) (vm->values.data[vm->values.size - (n)])
+
 static void er_vm_destruct(er_vm_t *vm) {
     ER_UNUSED(vm);
 }
@@ -183,9 +185,25 @@ ER_UNIMPLEMENTED_OPCODE_HANDLER(JUMP_IF_FALSE)
 
 ER_UNIMPLEMENTED_OPCODE_HANDLER(JUMP)
 
-ER_UNIMPLEMENTED_OPCODE_HANDLER(IADD)
+ER_OPCODE_HANDLER(ADD_INT) {
+    VM_PEEK(2).s64 += VM_PEEK(1).s64;
+    vm->values.size--;
+}
 
-ER_UNIMPLEMENTED_OPCODE_HANDLER(ISUB)
+ER_OPCODE_HANDLER(SUB_INT) {
+    VM_PEEK(2).s64 -= VM_PEEK(1).s64;
+    vm->values.size--;
+}
+
+ER_OPCODE_HANDLER(MUL_INT) {
+    VM_PEEK(2).s64 *= VM_PEEK(1).s64;
+    vm->values.size--;
+}
+
+ER_OPCODE_HANDLER(DIV_INT) {
+    VM_PEEK(2).s64 /= VM_PEEK(1).s64;
+    vm->values.size--;
+}
 
 ER_UNIMPLEMENTED_OPCODE_HANDLER(EQUALS)
 

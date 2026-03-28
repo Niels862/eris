@@ -62,6 +62,7 @@ void er_instr_print(size_t at, uint8_t const *code) {
     er_opcode_t opc = code[at];
     char const *name = er_opcode_name(opc);
     er_instrfmt_t fmt = er_opcode_format(opc);
+    uint8_t const *arg = code + at + 1;
 
     switch (fmt) {
         case ER_FMT_NONE: {
@@ -70,19 +71,19 @@ void er_instr_print(size_t at, uint8_t const *code) {
         }
 
         case ER_FMT_S16: {
-            int16_t value = er_read_u16(code + 1);
+            int16_t value = er_read_u16(arg);
             fprintf(stderr, "%s %" PRId16 "\n", name, value);
             break;
         }
 
         case ER_FMT_INDEX: {
-            uint16_t value = er_read_u16(code + 1);
+            uint16_t value = er_read_u16(arg);
             fprintf(stderr, "%s #%" PRIu16 "\n", name, value);
             break;
         }
 
         case ER_FMT_JUMP: {
-            int16_t offset = er_read_u16(code + 1);
+            int16_t offset = er_read_u16(arg);
             size_t address = at + offset;
             fprintf(stderr, "%s 0x%04zX\n", name, address);
             break;

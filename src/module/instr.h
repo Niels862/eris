@@ -30,8 +30,10 @@ typedef enum {
     X(JUMP_IF_TRUE,     ER_FMT_JUMP) \
     X(JUMP_IF_FALSE,    ER_FMT_JUMP) \
     X(JUMP,             ER_FMT_JUMP) \
-    X(IADD,             ER_FMT_NONE) \
-    X(ISUB,             ER_FMT_NONE) \
+    X(ADD_INT,          ER_FMT_NONE) \
+    X(SUB_INT,          ER_FMT_NONE) \
+    X(MUL_INT,          ER_FMT_NONE) \
+    X(DIV_INT,          ER_FMT_NONE) \
     X(EQUALS,           ER_FMT_NONE) \
     X(NOT_EQUALS,       ER_FMT_NONE)
 
