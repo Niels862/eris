@@ -18,6 +18,7 @@ typedef struct {
     } arenas;
 
     er_irblock_t *blocks;
+    er_irblock_t *entry;
     size_t n_blocks;
 } er_buildfunc_t;
 

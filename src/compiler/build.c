@@ -24,6 +24,7 @@ static void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode) {
     bfunc->arenas.ir = er_arena_new(256);
 
     bfunc->blocks = NULL;
+    bfunc->entry = NULL;
     bfunc->n_blocks = 0;
 }
 

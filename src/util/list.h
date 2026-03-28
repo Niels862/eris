@@ -22,12 +22,25 @@
     } while (0)
 
 #define ER_LIST_RESERVE_ONE(list) \
-    do { \
-        if ((list)->size + 1 > (list)->cap) { \
-            (list)->cap *= 2; \
-            (list)->data = er_xrealloc( \
-                (list)->data, (list)->cap * ER_LIST_ELEM_SIZE(list)); \
-        } \
-    } while (0)
+    ((list)->size + 1 > (list)->cap) ? ( \
+        (list)->cap *= 2, \
+        (list)->data = er_xrealloc( \
+            (list)->data, (list)->cap * ER_LIST_ELEM_SIZE(list)), \
+        (1) \
+    ) : \
+        (0)
+
+#define ER_LIST_ADD(list, elem) \
+    ( \
+        ER_LIST_RESERVE_ONE(list), \
+        (list)->data[(list)->size] = (elem), \
+        (list)->size++ \
+    )
+
+#define ER_LIST_EMPLACE(list) \
+    ( \
+        ER_LIST_RESERVE_ONE(list), \
+        (&((list)->data[(list)->size++])) \
+    )
 
 #endif
