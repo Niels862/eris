@@ -4,7 +4,8 @@
 #include "compiler/build.h"
 #include "compiler/token.h"
 #include "compiler/ast.h"
+#include <stdbool.h>
 
-void er_parse(er_buildmod_t *bmod);
+bool er_parse(er_buildmod_t *bmod);
 
 #endif

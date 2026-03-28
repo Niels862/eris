@@ -4,7 +4,8 @@
 #include "compiler/token.h"
 #include "compiler/build.h"
 #include <stddef.h>
+#include <stdbool.h>
 
-void er_lex(er_buildmod_t *bmod);
+bool er_lex(er_buildmod_t *bmod);
 
 #endif

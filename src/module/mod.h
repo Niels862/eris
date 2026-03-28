@@ -16,6 +16,10 @@ typedef struct {
 
     uint8_t *code;
     size_t code_size;
+
+    uint16_t n_args;
+    uint16_t n_locals;
+    uint16_t n_temps;
 } er_func_t;
 
 typedef struct {
@@ -34,8 +38,9 @@ typedef struct {
     size_t n_funcs;
 } er_mod_t;
 
-er_func_t *er_func_new(uint16_t me, uint16_t modid, 
-                       uint8_t *code, size_t code_size);
+er_func_t *er_func_new(er_constidx_t name, uint16_t modid, 
+                       uint8_t *code, size_t code_size, 
+                       uint16_t n_args, uint16_t n_locals, uint16_t n_temps);
 
 void er_func_delete(er_func_t *func);
 

@@ -2,6 +2,7 @@
 #include "compiler/lex.h"
 #include "compiler/parse.h"
 #include "compiler/irgen.h"
+#include "compiler/analyze.h"
 #include "compiler/codegen.h"
 #include "util/file.h"
 #include "util/alloc.h"
@@ -123,13 +124,11 @@ er_mod_t **er_build(char const *entry) {
         return NULL;
     }
 
-    er_lex(bmod);
-    if (bmod->toks == NULL) {
+    if (!er_lex(bmod)) {
         goto end;
     }
 
-    er_parse(bmod);
-    if (bmod->root == NULL) {
+    if (!er_parse(bmod)) {
         goto end;
     }
 
@@ -139,9 +138,10 @@ er_mod_t **er_build(char const *entry) {
 
     er_create_buildfuncs(bmod);
 
-    for (size_t i = 0; i < bmod->n_bfuncs; i++) {
-        er_irgen(bmod, &bmod->bfuncs[i]);
-        // TODO: Type Analysis
+    er_irgen(bmod);
+
+    if (!er_analyze(bmod)) {
+        goto end;
     }
 
     er_codegen(bmod);

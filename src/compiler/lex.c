@@ -200,7 +200,7 @@ static void er_lex_comment(er_lexctx_t *ctx) {
     er_lex_discard(ctx);
 }
 
-void er_lex(er_buildmod_t *bmod) {
+bool er_lex(er_buildmod_t *bmod) {
     assert(bmod->toks == NULL);
 
     er_lexctx_t ctx = {
@@ -239,4 +239,5 @@ void er_lex(er_buildmod_t *bmod) {
     er_lex_emit(&ctx, ER_TOK_ENDOFINPUT);
 
     bmod->toks = ctx.toks;
+    return true;
 }

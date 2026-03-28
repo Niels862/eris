@@ -4,6 +4,6 @@
 #include "compiler/build.h"
 #include "compiler/ast.h"
 
-void er_irgen(er_buildmod_t *bmod, er_buildfunc_t *bfunc);
+void er_irgen(er_buildmod_t *bmod);
 
 #endif

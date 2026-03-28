@@ -178,7 +178,7 @@ static void er_build_cfg(er_genctx_t *g) {
     er_move_blocks(g);
 }
 
-void er_irgen(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
+static void er_irgen_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
     er_genctx_t g;
     er_genctx_init(&g, bmod, bfunc);
 
@@ -189,5 +189,11 @@ void er_irgen(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
 
     for (size_t i = 0; i < bfunc->n_blocks; i++) {
         er_irblock_print(&bfunc->blocks[i]);
+    }
+}
+
+void er_irgen(er_buildmod_t *bmod) {
+    for (size_t i = 0; i < bmod->n_bfuncs; i++) {
+        er_irgen_func(bmod, &bmod->bfuncs[i]);
     }
 }

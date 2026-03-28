@@ -17,6 +17,7 @@ typedef struct {
     er_arena_t *scratch;
     er_tok_t *toks;
     er_tok_t *curr;
+    bool error;
 } er_parsectx_t;
 
 #define ER_NODELIST_STATIC_DATA_SIZE 16
@@ -27,6 +28,17 @@ typedef struct {
     size_t cap;
     er_astnode_t *data[ER_NODELIST_STATIC_DATA_SIZE];
 } er_nodelist_t;
+
+static void er_parsectx_init(er_parsectx_t *p, er_buildmod_t *bmod) {
+    p->bmod = bmod;
+    p->toks = p->curr = bmod->toks;
+    p->scratch = er_arena_new(256);
+    p->error = false;
+}
+
+static void er_parsectx_destruct(er_parsectx_t *p) {
+    er_arena_delete(p->scratch);
+}
 
 er_astnode_t *er_astnode_alloc(er_parsectx_t *p, 
                                er_astkind_t kind, er_textpos_t pos, 
@@ -368,6 +380,7 @@ static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
     }
     
     if (n == NULL) {
+        p->error = true;
         er_panic_stmt(p);
     }
 
@@ -415,6 +428,7 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
         if (fn != NULL) {
             er_nodelist_add(p, &funcs, fn);
         } else {
+            p->error = true;
             er_consume(p);
         }
     }
@@ -427,18 +441,17 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
     return n;
 }
 
-void er_parse(er_buildmod_t *bmod) {
+bool er_parse(er_buildmod_t *bmod) {
     assert(bmod->toks != NULL);
     assert(bmod->root == NULL);
 
-    er_parsectx_t p = {
-        .bmod       = bmod,
-        .toks       = bmod->toks,
-        .curr       = bmod->toks,
-        .scratch    = er_arena_new(4096),
-    };
+    er_parsectx_t p;
+    er_parsectx_init(&p, bmod);
 
     bmod->root = er_parse_mod(&p);
 
-    er_arena_delete(p.scratch);
+    bool success = !p.error;
+    er_parsectx_destruct(&p);
+
+    return success;
 }

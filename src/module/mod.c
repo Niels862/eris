@@ -5,7 +5,8 @@
 #include <stddef.h>
 
 er_func_t *er_func_new(er_constidx_t name, uint16_t modid, 
-                       uint8_t *code, size_t code_size) {
+                       uint8_t *code, size_t code_size, 
+                       uint16_t n_args, uint16_t n_locals, uint16_t n_temps) {
     er_func_t *func = er_xmalloc(sizeof(er_func_t));
 
     func->name = name;
@@ -13,6 +14,10 @@ er_func_t *er_func_new(er_constidx_t name, uint16_t modid,
 
     func->code = code;
     func->code_size = code_size;
+
+    func->n_args = n_args;
+    func->n_locals = n_locals;
+    func->n_temps = n_temps;
 
     return func;
 }
@@ -27,8 +32,10 @@ static void er_func_print(er_func_t *func, er_mod_t *mod) {
 
     er_const_str_t *name = (er_const_str_t *)mod->consts[func->name];
 
-    fprintf(stderr, "  function %.*s (#%" PRIu16 ":#%" PRIu16 ") {\n", 
-            name->len, name->data, mod->me, func->name);
+    fprintf(stderr, "  function %.*s (#%" PRIu16 ":#%" PRIu16 ") "
+            "with %" PRIu16 " args, %" PRIu16 " locals, %" PRIu16 " temps {\n", 
+            name->len, name->data, mod->me, func->name,
+            func->n_args, func->n_locals, func->n_temps);
 
     size_t at = 0;
     while (at < func->code_size) {

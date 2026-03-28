@@ -237,7 +237,7 @@ static er_func_t *er_assemble_func(er_genctx_t *g, er_buildfunc_t *bfunc) {
     assert(code_size == at);
 
     er_constidx_t name = er_make_const_str(g, bfunc->name);
-    return er_func_new(name, 0, code, code_size);
+    return er_func_new(name, 0, code, code_size, 0, 0, 0);
 }
 
 static er_mod_t *er_assemble_mod(er_genctx_t *g, er_constidx_t me, uint16_t id,
