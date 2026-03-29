@@ -65,6 +65,9 @@ er_mod_t *er_mod_new(er_constidx_t me, uint16_t id,
 }
 
 void er_mod_delete(er_mod_t *mod) {
+    for (size_t i = 0; i < mod->n_consts; i++) {
+        free(mod->consts[i]);
+    }
     free(mod->consts);
 
     for (size_t i = 0; i < mod->n_funcs; i++) {

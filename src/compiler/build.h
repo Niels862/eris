@@ -4,6 +4,7 @@
 #include "compiler/token.h"
 #include "compiler/ast.h"
 #include "compiler/ir.h"
+#include "compiler/symbol.h"
 #include "module/mod.h"
 #include "util/arena.h"
 #include "util/error.h"
@@ -36,6 +37,8 @@ typedef struct {
 
     er_tok_t *toks;
     er_astnode_t *root;
+
+    er_symtab_t globals;
 
     er_buildfunc_t *bfuncs;
     size_t n_bfuncs;

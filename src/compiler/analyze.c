@@ -24,6 +24,7 @@ static void er_anactx_init(er_anactx_t *a, er_buildfunc_t *bfunc) {
 
 static void er_anactx_destruct(er_anactx_t *a) {
     er_arena_delete(a->scratch);
+    free(a->tasks.data);
 }
 
 static void er_add_task(er_anactx_t *a, er_irblock_t *task) {

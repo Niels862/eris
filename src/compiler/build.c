@@ -48,6 +48,8 @@ static er_buildmod_t *er_buildmod_new(char const *filename,
     bmod->toks = NULL;
     bmod->root = NULL;
 
+    er_symtab_init(&bmod->globals);
+
     bmod->bfuncs = NULL;
     bmod->n_bfuncs = 0;
 
@@ -103,6 +105,8 @@ static void er_buildmod_delete(er_buildmod_t *bmod) {
         }
         free(bmod->bfuncs);
     }
+
+    er_symtab_destruct(&bmod->globals);
 
     free(bmod);
 }

@@ -67,7 +67,8 @@ static void er_vm_init(er_vm_t *vm) {
 #define VM_PEEK(n) (vm->values.data[vm->values.size - (n)])
 
 static void er_vm_destruct(er_vm_t *vm) {
-    ER_UNUSED(vm);
+    free(vm->values.data);
+    free(vm->frames.data);
 }
 
 static void er_stack_print(er_valuestack_t *values, size_t start) {
