@@ -20,6 +20,8 @@ typedef struct {
     er_irblock_t *blocks;
     er_irblock_t *entry;
     size_t n_blocks;
+
+    size_t n_temps;
 } er_buildfunc_t;
 
 typedef struct {

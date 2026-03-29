@@ -26,6 +26,8 @@ static void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode) {
     bfunc->blocks = NULL;
     bfunc->entry = NULL;
     bfunc->n_blocks = 0;
+
+    bfunc->n_temps = 0;
 }
 
 static void er_buildfunc_destruct(er_buildfunc_t *bfunc) {

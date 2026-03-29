@@ -2,6 +2,7 @@
 #include "util/arena.h"
 #include "util/list.h"
 #include "util/error.h"
+#include <stdlib.h>
 
 typedef struct {
     er_arena_t *scratch;
@@ -49,21 +50,81 @@ static void er_analyze_dataflow(er_anactx_t *a, void *state,
     }
 }
 
-void er_transfer_stack_size(er_irblock_t *block, void *state) {
-    ER_UNUSED(block);
+#define ER_STACKSIZE_UNSET -1
 
-    size_t size = 0;
-    *(size_t *)state = size;
+typedef struct {
+    size_t size;
+    size_t max_size;
+    size_t *in;
+} er_stacksizestate_t;
+
+static void er_stacksize_init(er_stacksizestate_t *state, 
+                              er_buildfunc_t *bfunc) {
+    state->size = 0;
+    state->max_size = 0;
+    state->in = er_xmalloc(bfunc->n_blocks * sizeof(size_t));
+
+    for (size_t i = 0; i < bfunc->n_blocks; i++) {
+        if (i == ER_IRBLOCKREF_ENTRY) {
+            state->in[i] = 0;
+        } else {
+            state->in[i] = ER_STACKSIZE_UNSET;
+        }
+    }
 }
 
-bool er_analyze_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
+static void er_stacksize_destruct(er_stacksizestate_t *state) {
+    free(state->in);
+}
+
+static void er_stacksize_transfer(er_irblock_t *block, void *gstate) {
+    er_stacksizestate_t *state = gstate;
+
+    state->size = state->in[block->ref];
+
+    for (size_t i = 0; i < block->n_nodes; i++) {
+        er_irnode_t *node = &block->nodes[i];
+
+        switch (node->tag) {
+            case ER_IR_PUSHINT:
+                state->size += 1;
+                break;
+
+            case ER_IR_BINOP:
+                state->size -= 1;
+                break;
+
+            case ER_IR_RET:
+                state->size = 0;
+                break;
+
+            default:
+                ER_UNHANDLED_SWITCH_VALUE("%d", node->tag);
+        }
+
+        if (state->size > state->max_size) {
+            state->max_size = state->size;
+        }
+    }
+}
+
+static void er_stacksize_analyze(er_anactx_t *a) {
+    er_stacksizestate_t state;
+    er_stacksize_init(&state, a->bfunc);
+
+    er_analyze_dataflow(a, &state, er_stacksize_transfer, NULL);
+    a->bfunc->n_temps = state.max_size;
+
+    er_stacksize_destruct(&state);
+}
+
+static bool er_analyze_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
     ER_UNUSED(bmod);
 
     er_anactx_t a;
     er_anactx_init(&a, bfunc);
 
-    size_t size;
-    er_analyze_dataflow(&a, &size, er_transfer_stack_size, NULL);
+    er_stacksize_analyze(&a);
 
     er_anactx_destruct(&a);
 

@@ -55,7 +55,7 @@ void er_irnode_print(er_irnode_t *node) {
 }
 
 void er_irblock_print(er_irblock_t *block) {
-    fprintf(stderr, "{\n");
+    fprintf(stderr, "[%" PRIu16 "] {\n", block->ref);
 
     for (size_t i = 0; i < block->n_nodes; i++) {
         fprintf(stderr, "  ");

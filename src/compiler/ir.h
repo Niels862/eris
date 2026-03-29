@@ -10,6 +10,8 @@ typedef uint16_t er_irblockref_t;
 
 typedef uint16_t er_irslotref_t;
 
+#define ER_IRBLOCKREF_ENTRY 0
+
 #define ER_IRTAGS(X) \
         X(PUSHINT,  S64) \
         X(BINOP,    BINOP) \
@@ -39,6 +41,7 @@ typedef struct {
 typedef struct {
     er_irnode_t *nodes;
     size_t n_nodes;
+    er_irblockref_t ref;
 } er_irblock_t;
 
 char const *er_ir_name(er_irtag_t tag);

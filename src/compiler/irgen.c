@@ -148,6 +148,7 @@ static er_irblock_t *er_add_block(er_genctx_t *g,
 
     block->nodes = nodes;
     block->n_nodes = n_nodes;
+    block->ref = g->blocks.size - 1;
 
     return block;
 }
