@@ -46,6 +46,18 @@ typedef struct {
     er_mod_t *mod;
 } er_buildmod_t;
 
+typedef struct {
+    struct {
+        er_arena_t *persistent;
+    } arenas;
+
+    er_symtab_t builtins;
+    
+    struct {
+        er_sym_t *Int;
+    } sym;
+} er_buildctx_t;
+
 er_mod_t **er_build(char const *entry);
 
 #endif

@@ -2,6 +2,7 @@
 #include "compiler/lex.h"
 #include "compiler/parse.h"
 #include "compiler/irgen.h"
+#include "compiler/declare.h"
 #include "compiler/analyze.h"
 #include "compiler/codegen.h"
 #include "util/file.h"
@@ -111,6 +112,20 @@ static void er_buildmod_delete(er_buildmod_t *bmod) {
     free(bmod);
 }
 
+static void er_buildctx_init(er_buildctx_t *bctx) {
+    bctx->arenas.persistent = er_arena_new(256);
+
+    er_symtab_init(&bctx->builtins);
+
+    memset(&bctx->sym, 0, sizeof(bctx->sym));
+}
+
+static void er_buildctx_destruct(er_buildctx_t *bctx) {
+    er_arena_delete(bctx->arenas.persistent);
+
+    er_symtab_destruct(&bctx->builtins);
+}
+
 static void er_create_buildfuncs(er_buildmod_t *bmod) {
     er_astmod_t *Mod = &bmod->root->data.Mod;
     bmod->n_bfuncs = Mod->n_funcs;
@@ -123,12 +138,20 @@ static void er_create_buildfuncs(er_buildmod_t *bmod) {
 }
 
 er_mod_t **er_build(char const *entry) {
+    er_buildctx_t bctx;
+    er_buildctx_init(&bctx);
+
+    er_load_builtins(&bctx);
+
+    fprintf(stderr, "built-ins ");
+    er_symtab_print(&bctx.builtins);
+
     er_mod_t **mods = NULL;
 
     er_buildmod_t *bmod = er_buildmod_read(entry);
     if (bmod == NULL) {
         fprintf(stderr, "could not load entry module: '%s'\n", entry);
-        return NULL;
+        goto end;
     }
 
     if (!er_lex(bmod)) {
@@ -142,6 +165,7 @@ er_mod_t **er_build(char const *entry) {
     er_ast_print(bmod->root);
 
     // TODO: Declaration Phase
+    er_symtab_print(&bmod->globals);
 
     er_create_buildfuncs(bmod);
 
@@ -158,6 +182,11 @@ er_mod_t **er_build(char const *entry) {
     mods[1] = NULL;
 
 end:
-    er_buildmod_delete(bmod);
+    if (bmod != NULL) {
+        er_buildmod_delete(bmod);
+    }
+
+    er_buildctx_destruct(&bctx);
+
     return mods;
 }

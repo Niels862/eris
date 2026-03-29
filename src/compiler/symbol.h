@@ -4,6 +4,7 @@
 #include "util/arena.h"
 #include "util/string.h"
 #include "util/error.h"
+#include <stdbool.h>
 
 #define ER_SYMS(X) \
     X(CLASS)
@@ -39,10 +40,16 @@ struct er_symtab_t {
     size_t cap;
 };
 
+void er_sym_print(er_sym_t *sym);
+
 void er_symtab_init(er_symtab_t *syms);
 
 void er_symtab_destruct(er_symtab_t *syms);
 
 void er_symtab_freeze(er_symtab_t *syms, er_arena_t *arena);
+
+void er_symtab_print(er_symtab_t *syms);
+
+er_sym_t *er_symtab_insert(er_symtab_t *syms, er_sym_t *sym);
 
 #endif

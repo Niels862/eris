@@ -43,7 +43,7 @@ static void er_parsectx_destruct(er_parsectx_t *p) {
 er_astnode_t *er_astnode_alloc(er_parsectx_t *p, 
                                er_astkind_t kind, er_textpos_t pos, 
                                size_t datasize) {
-    size_t size = sizeof(er_astnode_t) + datasize;
+    size_t size = offsetof(er_astnode_t, data) + datasize;
     er_astnode_t *n = er_arena_alloc(p->bmod->arenas.parse, size);
 
     n->kind = kind;
