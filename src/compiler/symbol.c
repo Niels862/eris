@@ -17,6 +17,7 @@ void er_sym_print(er_sym_t *sym) {
 
 void er_symtab_init(er_symtab_t *syms) {
     ER_LIST_INIT(syms, 4);
+    syms->enclosing = NULL;
 }
 
 void er_symtab_destruct(er_symtab_t *syms) {
@@ -31,15 +32,37 @@ void er_symtab_freeze(er_symtab_t *syms, er_arena_t *arena) {
     syms->cap = ER_SYMTAB_CAP_FROZEN;
 }
 
-void er_symtab_print(er_symtab_t *syms) {
-    fprintf(stderr, "symbol-table {\n");
+static void er_symtab_print_contents(er_symtab_t *syms) {
+    fprintf(stderr, "{\n");
 
-    for (size_t i = 0; i < syms->size; i++) {
-        fprintf(stderr, "  ");
-        er_sym_print(syms->data[i]);
+    if (syms->size == 0) {
+        fprintf(stderr, "  (empty)\n");
+    } else {
+        for (size_t i = 0; i < syms->size; i++) {
+            fprintf(stderr, "  ");
+            er_sym_print(syms->data[i]);
+        }
     }
 
     fprintf(stderr, "}\n");
+}
+
+void er_symtab_print(er_symtab_t *syms) {
+    fprintf(stderr, "symbol-table ");
+    er_symtab_print_contents(syms);
+}
+
+void er_symtab_print_all(er_symtab_t *syms) {
+    fprintf(stderr, "symbol-table ");
+
+    size_t i = 0;
+    while (syms != NULL) {
+        fprintf(stderr, "(level %zu) ", i);
+        er_symtab_print_contents(syms);
+
+        syms = syms->enclosing;
+        i++;
+    }
 }
 
 er_sym_t *er_symtab_insert(er_symtab_t *syms, er_sym_t *sym) {

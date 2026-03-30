@@ -35,7 +35,8 @@ static void er_buildfunc_destruct(er_buildfunc_t *bfunc) {
     er_arena_delete(bfunc->arenas.ir);
 }
 
-static er_buildmod_t *er_buildmod_new(char const *filename, 
+static er_buildmod_t *er_buildmod_new(er_buildctx_t *bctx, 
+                                      char const *filename, 
                                       char *text, size_t size) {
     er_buildmod_t *bmod = er_xmalloc(sizeof(er_buildmod_t));
 
@@ -50,6 +51,7 @@ static er_buildmod_t *er_buildmod_new(char const *filename,
     bmod->root = NULL;
 
     er_symtab_init(&bmod->globals);
+    bmod->globals.enclosing = &bctx->builtins;
 
     bmod->bfuncs = NULL;
     bmod->n_bfuncs = 0;
@@ -59,17 +61,19 @@ static er_buildmod_t *er_buildmod_new(char const *filename,
     return bmod;
 }
 
-static er_buildmod_t *er_buildmod_read_path(char const *path) {
+static er_buildmod_t *er_buildmod_read_path(er_buildctx_t *bctx, 
+                                            char const *path) {
     char *text;
     size_t size;
     if (!er_read_text_file(path, &text, &size)) {
         return NULL;
     }
 
-    return er_buildmod_new(path, text, size);
+    return er_buildmod_new(bctx, path, text, size);
 }
 
-static er_buildmod_t *er_buildmod_read(char const *module) {
+static er_buildmod_t *er_buildmod_read(er_buildctx_t *bctx, 
+                                       char const *module) {
     char const *paths[] = {
         "testdata/"
     };
@@ -82,7 +86,7 @@ static er_buildmod_t *er_buildmod_read(char const *module) {
         strcat(buf, ".eris");
 
         if (er_is_file(buf)) {
-            return er_buildmod_read_path(buf);
+            return er_buildmod_read_path(bctx, buf);
         }
     }
 
@@ -143,12 +147,9 @@ er_mod_t **er_build(char const *entry) {
 
     er_load_builtins(&bctx);
 
-    fprintf(stderr, "built-ins ");
-    er_symtab_print(&bctx.builtins);
-
     er_mod_t **mods = NULL;
 
-    er_buildmod_t *bmod = er_buildmod_read(entry);
+    er_buildmod_t *bmod = er_buildmod_read(&bctx, entry);
     if (bmod == NULL) {
         fprintf(stderr, "could not load entry module: '%s'\n", entry);
         goto end;
@@ -165,7 +166,8 @@ er_mod_t **er_build(char const *entry) {
     er_ast_print(bmod->root);
 
     // TODO: Declaration Phase
-    er_symtab_print(&bmod->globals);
+    fprintf(stderr, "global ");
+    er_symtab_print_all(&bmod->globals);
 
     er_create_buildfuncs(bmod);
 

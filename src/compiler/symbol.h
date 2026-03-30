@@ -50,6 +50,8 @@ void er_symtab_freeze(er_symtab_t *syms, er_arena_t *arena);
 
 void er_symtab_print(er_symtab_t *syms);
 
+void er_symtab_print_all(er_symtab_t *syms);
+
 er_sym_t *er_symtab_insert(er_symtab_t *syms, er_sym_t *sym);
 
 #endif
