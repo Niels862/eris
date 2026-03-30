@@ -13,6 +13,11 @@ void er_sym_print(er_sym_t *sym) {
             fprintf(stderr, "class\n");
             break;
         }
+
+        case ER_SYM_FUNC: {
+            fprintf(stderr, "func\n");
+            break;
+        }
     }
 }
 

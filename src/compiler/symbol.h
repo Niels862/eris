@@ -1,13 +1,15 @@
 #ifndef ER_COMPILER_SYMBOL_H
 #define ER_COMPILER_SYMBOL_H
 
+#include "compiler/type.h"
 #include "util/arena.h"
 #include "util/string.h"
 #include "util/error.h"
 #include <stdbool.h>
 
 #define ER_SYMS(X) \
-    X(CLASS)
+    X(CLASS) \
+    X(FUNC)
 
 #define X(n) ER_SYM_##n,
 typedef enum {
@@ -16,19 +18,24 @@ typedef enum {
 #undef X
 
 typedef struct {
-    ER_EMPTY;
+    er_type_t *type;
 } er_symclass_t;
 
 typedef struct {
-    er_symclass_t Class;
-} er_symdata_t;
+    er_type_t *type;
+} er_symfunc_t;
 
 typedef struct {
+    er_symclass_t Class;
+    er_symfunc_t Func;
+} er_symdata_t;
+
+struct er_sym_t {
     er_symkind_t kind;
     er_str_t name;
     er_textpos_t declpos;
     er_symdata_t data;
-} er_sym_t;
+};
 
 typedef struct er_symtab_t er_symtab_t;
 

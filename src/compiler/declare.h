@@ -6,4 +6,6 @@
 
 void er_load_builtins(er_buildctx_t *bctx);
 
+void er_declare(er_buildmod_t *bmod);
+
 #endif
