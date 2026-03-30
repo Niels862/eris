@@ -54,4 +54,6 @@ void er_symtab_print_all(er_symtab_t *syms);
 
 er_sym_t *er_symtab_insert(er_symtab_t *syms, er_sym_t *sym);
 
+er_sym_t *er_symtab_lookup(er_symtab_t *syms, er_str_t *name);
+
 #endif

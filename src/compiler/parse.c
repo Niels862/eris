@@ -169,6 +169,43 @@ static void er_panic_stmt(er_parsectx_t *p) {
     } while (p->curr->kind != ER_TOK_ENDOFINPUT);
 }
 
+static bool er_is_typename(er_parsectx_t *p, er_tok_t *name, bool error) {
+    er_sym_t *sym = er_symtab_lookup(&p->bmod->globals, &name->text);
+    if (sym == NULL) {
+        if (error) {
+            er_err(p->bmod, name->pos, "'%.*s' is not defined", 
+                name->text.len, name->text.data);
+        }
+        return false;
+    }
+
+    if (sym->kind != ER_SYM_CLASS) {
+        if (error) {
+            er_err(p->bmod, name->pos, "'%.*s' is not a typename", 
+                name->text.len, name->text.data);
+        }
+        return false;
+    }
+
+    return true;
+}
+
+static er_astnode_t *er_parse_annotation(er_parsectx_t *p) {
+    er_tok_t *name = er_expect(p, ER_TOK_IDENTIFIER);
+    if (name == NULL) {
+        return NULL;
+    }
+
+    if (!er_is_typename(p, name, true)) {
+        return NULL;
+    }
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_IDENT, name->pos, Ident);
+    n->data.Ident.name = name->text;
+
+    return n;
+}
+
 #define ER_INTEGER_BUF_STATIC_SIZE 64
 
 static int er_parse_base_modifier(er_str_t *s) {
@@ -388,7 +425,8 @@ static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
 }
 
 static er_astnode_t *er_parse_func(er_parsectx_t *p) {
-    if (er_expect(p, ER_TOK_IDENTIFIER) == NULL) {
+    er_astnode_t *ret_anno = er_parse_annotation(p);
+    if (ret_anno == NULL) {
         return NULL;
     }
 
@@ -410,6 +448,7 @@ static er_astnode_t *er_parse_func(er_parsectx_t *p) {
 
     er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, Func);
     n->data.Func.name = *name;
+    n->data.Func.ret_anno = ret_anno;
     er_nodelist_move(p, &stmts, 
                      &n->data.Func.stmts, 
                      &n->data.Func.n_stmts);

@@ -1,6 +1,7 @@
 #include "compiler/symbol.h"
 #include "util/list.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define ER_SYMTAB_CAP_FROZEN 0
 
@@ -66,9 +67,23 @@ void er_symtab_print_all(er_symtab_t *syms) {
 }
 
 er_sym_t *er_symtab_insert(er_symtab_t *syms, er_sym_t *sym) {
-    // FIXME: Find previous definition if exists
-
     ER_LIST_ADD(syms, sym);
-
     return NULL;
+}
+
+er_sym_t *er_symtab_lookup(er_symtab_t *syms, er_str_t *name) {
+    if (syms == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < syms->size; i++) {
+        er_sym_t *sym = syms->data[i];
+
+        if (sym->name.len == name->len 
+            && strncmp(sym->name.data, name->data, name->len) == 0) {
+            return sym;
+        }
+    }
+
+    return er_symtab_lookup(syms->enclosing, name);
 }

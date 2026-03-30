@@ -36,6 +36,7 @@ static er_irblock_t *er_pop_task(er_anactx_t *a) {
 }
 
 typedef void(*er_ana_transfer_t)(er_irblock_t *, void *);
+
 typedef bool(*er_ana_merge_t)(er_irblock_t *, void *);
 
 static void er_analyze_dataflow(er_anactx_t *a, void *state, 
@@ -119,14 +120,65 @@ static void er_stacksize_analyze(er_anactx_t *a) {
     er_stacksize_destruct(&state);
 }
 
+typedef struct {
+    ER_EMPTY;
+} er_semstate_t;
+
+static void er_semstate_init(er_semstate_t *state) {
+    ER_UNUSED(state);
+}
+
+static void er_semstate_destruct(er_semstate_t *state) {
+    ER_UNUSED(state);
+}
+
+static void er_transfer_node_semantics(er_irnode_t *node, 
+                                       er_semstate_t *state) {
+    ER_UNUSED(state);
+    
+    switch (node->tag) {
+        case ER_IR_PUSHINT: {
+            break;
+        }
+
+        case ER_IR_BINOP: {
+            break;
+        }
+
+        case ER_IR_RET: {
+            break;
+        }
+
+        default:
+            ER_UNHANDLED_SWITCH_VALUE("%d", node->tag);
+    }
+}
+
+static void er_transfer_semantics(er_irblock_t *block, void *gstate) {
+    er_semstate_t *state = gstate;
+
+    for (size_t i = 0; i < block->n_nodes; i++) {
+        er_transfer_node_semantics(&block->nodes[i], state);
+    }
+}
+
+static void er_analyze_semantics(er_anactx_t *a) {
+    er_semstate_t state;
+    er_semstate_init(&state);
+
+    er_analyze_dataflow(a, &state, er_transfer_semantics, NULL);
+
+    er_semstate_destruct(&state);
+}
+
 static bool er_analyze_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
     ER_UNUSED(bmod);
 
     er_anactx_t a;
     er_anactx_init(&a, bfunc);
 
-    er_stacksize_analyze(&a);
-
+    er_analyze_semantics(&a);
+    
     er_anactx_destruct(&a);
 
     return true;

@@ -99,6 +99,7 @@ static void er_print_node(char const *attr,
         case ER_AST_FUNC: {
             er_astfunc_t *Func = &data->Func;
             er_print_str("name", &Func->name, ndepth);
+            er_print_node("ret_anno", Func->ret_anno, ndepth);
             er_print_list("stmts", Func->stmts, Func->n_stmts, ndepth);
             break;
         }
@@ -122,6 +123,13 @@ static void er_print_node(char const *attr,
             fprintf(stderr, "%s\n", er_binop_name(BinOp->op));
             er_print_node("left", BinOp->left, ndepth);
             er_print_node("right", BinOp->right, ndepth);
+            break;
+        }
+
+        case ER_AST_IDENT: {
+            er_astident_t *Ident = &data->Ident;
+            er_print_str("name", &Ident->name, ndepth);
+            break;
         }
     }
 

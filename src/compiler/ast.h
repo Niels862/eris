@@ -11,7 +11,8 @@
     X(FUNC) \
     X(RET) \
     X(BINOP) \
-    X(INT)
+    X(INT) \
+    X(IDENT)
 
 #define X(n) ER_AST_##n,
 typedef enum {
@@ -40,6 +41,7 @@ typedef struct {
 
 typedef struct {
     er_str_t name;
+    er_astnode_t *ret_anno;
     er_astnode_t **stmts;
     size_t n_stmts;
 } er_astfunc_t;
@@ -58,12 +60,17 @@ typedef struct {
     int64_t val;
 } er_astint_t;
 
+typedef struct {
+    er_str_t name;
+} er_astident_t;
+
 typedef union {
     er_astmod_t Mod;
     er_astfunc_t Func;
     er_astret_t Ret;
     er_astint_t Int;
     er_astbinop_t BinOp;
+    er_astident_t Ident;
 } er_astdata_t;
 
 struct er_astnode_t {
