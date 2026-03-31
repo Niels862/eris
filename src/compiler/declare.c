@@ -33,23 +33,24 @@ static er_sym_t *er_make_function(er_arena_t *arena,
     return ER_SYM_ALLOC(arena, ER_SYM_FUNC, name, pos, Func);
 }
 
-static er_sym_t *er_insert_builtin_classtype(er_symtab_t *syms, 
-                                             er_arena_t *arena, char *name) {
+static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name) {
+    er_arena_t *arena = bctx->arenas.persistent;
+    
     er_str_t str;
     er_str_from_cstr(&str, name);
 
     er_sym_t *sym = er_make_class(arena, &str, er_textpos_empty);
-    er_sym_t *prev = er_symtab_insert(syms, sym);
+    er_sym_t *prev = er_symtab_insert(&bctx->builtins, sym);
     assert(prev == NULL);
+
+    er_type_t *type = er_make_classtype(&bctx->tf, sym);
+    sym->data.Class.type = type;
 
     return sym;
 }
 
 void er_load_builtins(er_buildctx_t *bctx) {
-    er_symtab_t *syms = &bctx->builtins;
-    er_arena_t *arena = bctx->arenas.persistent;
-
-    bctx->sym.Int = er_insert_builtin_classtype(syms, arena, "int");
+    bctx->sym.Int = er_insert_builtin_classtype(bctx, "int");
 }
 
 void er_declare(er_buildmod_t *bmod) {

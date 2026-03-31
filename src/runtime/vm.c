@@ -230,7 +230,7 @@ static void er_loop(er_vm_t *vm) {
 
         er_dispatch(vm, opc);
 
-        er_vm_print(vm);
+        //er_vm_print(vm);
     }
 }
 

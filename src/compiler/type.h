@@ -1,6 +1,7 @@
 #ifndef ER_COMPILER_TYPE_H
 #define ER_COMPILER_TYPE_H
 
+#include "util/arena.h"
 #include <stddef.h>
 
 typedef struct er_sym_t er_sym_t;
@@ -30,6 +31,16 @@ struct er_type_t {
     er_typedata_t data;
 };
 
+typedef struct {
+    er_arena_t *arena;
+} er_typefactory_t;
+
 void er_type_print(er_type_t *type);
+
+void er_typefactory_init(er_typefactory_t *tf);
+
+void er_typefactory_destruct(er_typefactory_t *tf);
+
+er_type_t *er_make_classtype(er_typefactory_t *tf, er_sym_t *sym);
 
 #endif

@@ -5,6 +5,7 @@
 #include "compiler/ast.h"
 #include "compiler/ir.h"
 #include "compiler/symbol.h"
+#include "compiler/type.h"
 #include "module/mod.h"
 #include "util/arena.h"
 #include "util/error.h"
@@ -51,6 +52,7 @@ typedef struct {
         er_arena_t *persistent;
     } arenas;
 
+    er_typefactory_t tf;
     er_symtab_t builtins;
     
     struct {
