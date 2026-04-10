@@ -16,11 +16,15 @@
 
 #define ER_PATH_BUFFER_SIZE 4096
 
-static void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode) {
+void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode, 
+                       er_sym_t *sym) {
     assert(funcnode->kind == ER_AST_FUNC);
-    
+    assert(sym->kind == ER_SYM_FUNC);
+
     bfunc->root = funcnode;
+    bfunc->sym = sym;
     bfunc->name = &funcnode->data.Func.name;
+    bfunc->type = &sym->data.Func.type->data.Func;
 
     bfunc->arenas.ir = er_arena_new(256);
 
@@ -117,13 +121,11 @@ static void er_buildmod_delete(er_buildmod_t *bmod) {
 }
 
 static void er_buildctx_init(er_buildctx_t *bctx) {
+    memset(bctx, 0, sizeof(er_buildctx_t));
+
     bctx->arenas.persistent = er_arena_new(256);
-
     er_typefactory_init(&bctx->tf);
-
     er_symtab_init(&bctx->builtins);
-
-    memset(&bctx->sym, 0, sizeof(bctx->sym));
 }
 
 static void er_buildctx_destruct(er_buildctx_t *bctx) {
@@ -132,17 +134,6 @@ static void er_buildctx_destruct(er_buildctx_t *bctx) {
     er_typefactory_destruct(&bctx->tf);
 
     er_symtab_destruct(&bctx->builtins);
-}
-
-static void er_create_buildfuncs(er_buildmod_t *bmod) {
-    er_astmod_t *Mod = &bmod->root->data.Mod;
-    bmod->n_bfuncs = Mod->n_funcs;
-    bmod->bfuncs = er_xmalloc(bmod->n_bfuncs * sizeof(er_buildfunc_t));
-
-    for (size_t i = 0; i < Mod->n_funcs; i++) {
-        er_astnode_t *funcnode = Mod->funcs[i];
-        er_buildfunc_init(&bmod->bfuncs[i], funcnode);
-    }
 }
 
 er_mod_t **er_build(char const *entry) {
@@ -176,11 +167,9 @@ er_mod_t **er_build(char const *entry) {
     fprintf(stderr, "global ");
     er_symtab_print_all(&bmod->globals);
 
-    er_create_buildfuncs(bmod);
-
     er_irgen(bmod);
 
-    if (!er_analyze(bmod)) {
+    if (!er_analyze(&bctx, bmod)) {
         goto end;
     }
 

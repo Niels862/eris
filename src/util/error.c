@@ -9,5 +9,7 @@ void er_fatal(char const *file, int line, char const *format, ...) {
     vfprintf(stderr, format, args);
     va_end(args);
 
+    fprintf(stderr, "\n");
+
     exit(1);
 }

@@ -4,6 +4,6 @@
 #include "compiler/build.h"
 #include <stdbool.h>
 
-bool er_analyze(er_buildmod_t *bmod);
+bool er_analyze(er_buildctx_t *bctx, er_buildmod_t *bmod);
 
 #endif

@@ -43,4 +43,7 @@
         (&((list)->data[(list)->size++])) \
     )
 
+#define ER_LIST_POP(list) \
+    ((list)->data[--(list)->size])
+
 #endif

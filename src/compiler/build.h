@@ -15,7 +15,9 @@ typedef struct er_buildctx_t er_buildctx_t;
 
 typedef struct {
     er_astnode_t *root;
+    er_sym_t *sym;
     er_str_t *name;
+    er_typefunc_t *type;
 
     struct {
         er_arena_t *ir;
@@ -61,9 +63,16 @@ struct er_buildctx_t {
     
     struct {
         er_sym_t *Int;
+        er_sym_t *Bool;
     } sym;
+
+    er_type_t *Int;
+    er_type_t *Bool;
 };
 
+void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode, 
+                       er_sym_t *sym);
+                       
 er_mod_t **er_build(char const *entry);
 
 #endif

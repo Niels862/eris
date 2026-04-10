@@ -3,6 +3,7 @@
 #include "util/list.h"
 #include "util/error.h"
 #include <stdlib.h>
+#include <assert.h>
 
 typedef struct {
     er_arena_t *scratch;
@@ -121,31 +122,56 @@ static void er_stacksize_analyze(er_anactx_t *a) {
 }
 
 typedef struct {
-    ER_EMPTY;
+    er_type_t **data;
+    size_t size;
+    size_t cap;
+
+    er_buildctx_t *bctx;
+    er_buildfunc_t *bfunc;
+
+    er_type_t *rettype;
 } er_semstate_t;
 
-static void er_semstate_init(er_semstate_t *state) {
-    ER_UNUSED(state);
+static void er_semstate_init(er_semstate_t *state,  er_buildctx_t *bctx, 
+                             er_buildfunc_t *bfunc) {
+    ER_LIST_INIT(state, 16);
+
+    state->bctx = bctx;
+    state->bfunc = bfunc;
 }
 
 static void er_semstate_destruct(er_semstate_t *state) {
-    ER_UNUSED(state);
+    free(state->data);
 }
 
 static void er_transfer_node_semantics(er_irnode_t *node, 
-                                       er_semstate_t *state) {
-    ER_UNUSED(state);
-    
+                                       er_semstate_t *state) {    
     switch (node->tag) {
         case ER_IR_PUSHINT: {
+            ER_LIST_ADD(state, state->bctx->Int);
             break;
         }
 
         case ER_IR_BINOP: {
+            er_type_t *L = ER_LIST_POP(state);
+            er_type_t *R = ER_LIST_POP(state);
+
+            if (L == state->bctx->Int && R == state->bctx->Int) {
+                ER_LIST_ADD(state, state->bctx->Int);
+            } else {
+                ER_FATAL("TODO");
+            }
+
             break;
         }
 
         case ER_IR_RET: {
+            er_type_t *V = ER_LIST_POP(state);
+
+            if (V != state->bfunc->type->rettype) {
+                ER_FATAL("TODO");
+            }
+
             break;
         }
 
@@ -162,33 +188,37 @@ static void er_transfer_semantics(er_irblock_t *block, void *gstate) {
     }
 }
 
-static void er_analyze_semantics(er_anactx_t *a) {
-    er_semstate_t state;
-    er_semstate_init(&state);
+static bool er_merge_semantics(er_irblock_t *block, void *gstate) {
+    ER_UNUSED(block), ER_UNUSED(gstate);
+    return true;
+}
 
-    er_analyze_dataflow(a, &state, er_transfer_semantics, NULL);
+static void er_analyze_semantics(er_anactx_t *a, er_buildctx_t *bctx, 
+                                 er_buildfunc_t *bfunc) {
+    er_semstate_t state; 
+    er_semstate_init(&state, bctx, bfunc);
+
+    er_analyze_dataflow(a, &state, er_transfer_semantics, er_merge_semantics);
 
     er_semstate_destruct(&state);
 }
 
-static bool er_analyze_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
-    ER_UNUSED(bmod);
-
+static bool er_analyze_func(er_buildctx_t *bctx, er_buildfunc_t *bfunc) {
     er_anactx_t a;
     er_anactx_init(&a, bfunc);
 
-    er_analyze_semantics(&a);
+    er_analyze_semantics(&a, bctx, bfunc);
     
     er_anactx_destruct(&a);
 
     return true;
 }
 
-bool er_analyze(er_buildmod_t *bmod) {
+bool er_analyze(er_buildctx_t *bctx, er_buildmod_t *bmod) {
     bool s = true;
 
     for (size_t i = 0; i < bmod->n_bfuncs; i++) {
-        s &= er_analyze_func(bmod, &bmod->bfuncs[i]);
+        s &= er_analyze_func(bctx, &bmod->bfuncs[i]);
     }
 
     return s;

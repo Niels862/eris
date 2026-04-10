@@ -270,7 +270,7 @@ static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
                 return NULL;
             }
         } else {
-            ER_FATAL("unexpected character in integer literal\n");
+            ER_FATAL("unexpected character in integer literal");
         }
     }
 

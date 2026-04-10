@@ -1,4 +1,5 @@
 #include "compiler/declare.h"
+#include "util/list.h"
 #include "util/error.h"
 #include <string.h>
 #include <assert.h>
@@ -33,7 +34,8 @@ static er_sym_t *er_make_function(er_arena_t *arena,
     return ER_SYM_ALLOC(arena, ER_SYM_FUNC, name, pos, Func);
 }
 
-static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name) {
+static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name, 
+                                             er_type_t **type) {
     er_arena_t *arena = bctx->arenas.persistent;
     
     er_str_t str;
@@ -43,19 +45,26 @@ static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name) {
     er_sym_t *prev = er_symtab_insert(&bctx->builtins, sym);
     assert(prev == NULL);
 
-    er_type_t *type = er_make_classtype(&bctx->tf, sym);
-    sym->data.Class.type = type;
+    *type = er_make_classtype(&bctx->tf, sym);
+    sym->data.Class.type = *type;
 
     return sym;
 }
 
 void er_load_builtins(er_buildctx_t *bctx) {
-    bctx->sym.Int = er_insert_builtin_classtype(bctx, "int");
+    bctx->sym.Int = er_insert_builtin_classtype(bctx, "int", &bctx->Int);
+    bctx->sym.Bool = er_insert_builtin_classtype(bctx, "bool", &bctx->Bool);
 }
 
 typedef struct {
     er_arena_t *arena;
     er_typefactory_t *tf;
+
+    struct {
+        er_buildfunc_t *data;
+        size_t size;
+        size_t cap;
+    } bfuncs;
 } er_declctx_t;
 
 static er_type_t *er_type_from_anno(er_astnode_t *anno, er_symtab_t *syms) {
@@ -100,6 +109,10 @@ static bool er_declare_walk(er_declctx_t *dctx, er_astnode_t *n,
             sym->data.Func.type = er_make_functype(dctx->tf, rettype);
 
             er_symtab_insert(syms, sym);
+
+            er_buildfunc_t *bfunc = ER_LIST_EMPLACE(&dctx->bfuncs);
+            er_buildfunc_init(bfunc, n, sym);
+
             break;
         }
 
@@ -115,6 +128,12 @@ bool er_declare(er_buildctx_t *bctx, er_buildmod_t *bmod) {
         .tf     = &bctx->tf,
         .arena  = bmod->arenas.persistent,
     };
+    ER_LIST_INIT(&dctx.bfuncs, 8);
 
-    return er_declare_walk(&dctx, bmod->root, &bmod->globals);
+    bool s = er_declare_walk(&dctx, bmod->root, &bmod->globals);
+
+    bmod->bfuncs = dctx.bfuncs.data;
+    bmod->n_bfuncs = dctx.bfuncs.size;
+
+    return s;
 }
