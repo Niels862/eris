@@ -3,9 +3,10 @@
 
 #include "compiler/symbol.h"
 #include "compiler/build.h"
+#include <stdbool.h>
 
 void er_load_builtins(er_buildctx_t *bctx);
 
-void er_declare(er_buildmod_t *bmod);
+bool er_declare(er_buildctx_t *bctx, er_buildmod_t *bmod);
 
 #endif

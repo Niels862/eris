@@ -11,6 +11,8 @@
 #include "util/error.h"
 #include <stddef.h>
 
+typedef struct er_buildctx_t er_buildctx_t;
+
 typedef struct {
     er_astnode_t *root;
     er_str_t *name;
@@ -27,6 +29,8 @@ typedef struct {
 } er_buildfunc_t;
 
 typedef struct {
+    er_buildctx_t *ctx;
+
     char *filename;
     char *text;
     size_t size;
@@ -47,7 +51,7 @@ typedef struct {
     er_mod_t *mod;
 } er_buildmod_t;
 
-typedef struct {
+struct er_buildctx_t {
     struct {
         er_arena_t *persistent;
     } arenas;
@@ -58,7 +62,7 @@ typedef struct {
     struct {
         er_sym_t *Int;
     } sym;
-} er_buildctx_t;
+};
 
 er_mod_t **er_build(char const *entry);
 

@@ -33,6 +33,12 @@ struct er_type_t {
 
 typedef struct {
     er_arena_t *arena;
+
+    struct {
+        er_type_t **data;
+        size_t size;
+        size_t cap;
+    } types;
 } er_typefactory_t;
 
 void er_type_print(er_type_t *type);
@@ -42,5 +48,7 @@ void er_typefactory_init(er_typefactory_t *tf);
 void er_typefactory_destruct(er_typefactory_t *tf);
 
 er_type_t *er_make_classtype(er_typefactory_t *tf, er_sym_t *sym);
+
+er_type_t *er_make_functype(er_typefactory_t *tf, er_type_t *rettype);
 
 #endif

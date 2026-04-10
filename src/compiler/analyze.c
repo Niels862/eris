@@ -185,11 +185,11 @@ static bool er_analyze_func(er_buildmod_t *bmod, er_buildfunc_t *bfunc) {
 }
 
 bool er_analyze(er_buildmod_t *bmod) {
-    bool succes = true;
+    bool s = true;
 
     for (size_t i = 0; i < bmod->n_bfuncs; i++) {
-        succes &= er_analyze_func(bmod, &bmod->bfuncs[i]);
+        s &= er_analyze_func(bmod, &bmod->bfuncs[i]);
     }
 
-    return succes;
+    return s;
 }

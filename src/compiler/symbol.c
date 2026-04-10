@@ -11,6 +11,7 @@ void er_sym_print(er_sym_t *sym) {
     switch (sym->kind) {
         case ER_SYM_CLASS: {
             er_symclass_t *Class = &sym->data.Class;
+
             fprintf(stderr, "[class] valuetype=");
             er_type_print(Class->type);
             fprintf(stderr, "\n");
@@ -18,7 +19,11 @@ void er_sym_print(er_sym_t *sym) {
         }
 
         case ER_SYM_FUNC: {
-            fprintf(stderr, "[func]\n");
+            er_symfunc_t *Func = &sym->data.Func;
+
+            fprintf(stderr, "[func] type=");
+            er_type_print(Func->type);
+            fprintf(stderr, "\n");
             break;
         }
     }

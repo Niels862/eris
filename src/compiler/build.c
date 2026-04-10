@@ -169,7 +169,10 @@ er_mod_t **er_build(char const *entry) {
 
     er_ast_print(bmod->root);
 
-    // TODO: Declaration Phase
+    if (!er_declare(&bctx, bmod)) {
+        goto end;
+    }
+
     fprintf(stderr, "global ");
     er_symtab_print_all(&bmod->globals);
 

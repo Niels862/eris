@@ -53,6 +53,68 @@ void er_load_builtins(er_buildctx_t *bctx) {
     bctx->sym.Int = er_insert_builtin_classtype(bctx, "int");
 }
 
-void er_declare(er_buildmod_t *bmod) {
-    ER_UNUSED(bmod);
+typedef struct {
+    er_arena_t *arena;
+    er_typefactory_t *tf;
+} er_declctx_t;
+
+static er_type_t *er_type_from_anno(er_astnode_t *anno, er_symtab_t *syms) {
+    switch (anno->kind) {
+        case ER_AST_IDENT: {
+            er_sym_t *sym = er_symtab_lookup(syms, &anno->data.Ident.name);
+
+            if (sym->kind == ER_SYM_CLASS) {
+                return sym->data.Class.type;
+            }
+
+            ER_FATAL("TODO");
+        }
+
+        default:
+            ER_UNHANDLED_SWITCH_VALUE("%d", anno->kind);
+    }
+
+    return NULL;
+}
+
+static bool er_declare_walk(er_declctx_t *dctx, er_astnode_t *n, 
+                            er_symtab_t *syms) {
+    bool s = true;
+
+    switch (n->kind) {
+        case ER_AST_MOD: {
+            er_astmod_t *Mod = &n->data.Mod;
+
+            for (size_t i = 0; i < Mod->n_funcs; i++) {
+                s &= er_declare_walk(dctx, Mod->funcs[i], syms);
+            }
+            break;
+        }
+
+        case ER_AST_FUNC: {
+            er_astfunc_t *Func = &n->data.Func;
+
+            er_type_t *rettype = er_type_from_anno(Func->ret_anno, syms);
+
+            er_sym_t *sym = er_make_function(dctx->arena, &Func->name, n->pos);
+            sym->data.Func.type = er_make_functype(dctx->tf, rettype);
+
+            er_symtab_insert(syms, sym);
+            break;
+        }
+
+        default: 
+            ER_UNHANDLED_SWITCH_VALUE("%d", n->kind);
+    }
+
+    return s;
+}
+
+bool er_declare(er_buildctx_t *bctx, er_buildmod_t *bmod) {
+    er_declctx_t dctx = {
+        .tf     = &bctx->tf,
+        .arena  = bmod->arenas.persistent,
+    };
+
+    return er_declare_walk(&dctx, bmod->root, &bmod->globals);
 }

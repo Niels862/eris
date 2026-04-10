@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
+#include <sys/errno.h>
 
 void *er_xmalloc(size_t size) {
     void *p = malloc(size);
     if (p == NULL) {
-        perror("malloc");
+        fprintf(stderr, "malloc(%zu): %s\n", size, strerror(errno));
         abort();
     }
     return p;
@@ -16,7 +18,7 @@ void *er_xmalloc(size_t size) {
 void *er_xrealloc(void *p, size_t size) {
     void *p2 = realloc(p, size);
     if (p2 == NULL) {
-        perror("realloc");
+        fprintf(stderr, "realloc(%zu): %s\n", size, strerror(errno));
         abort();
     }
     return p2;
