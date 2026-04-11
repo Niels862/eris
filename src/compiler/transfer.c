@@ -33,8 +33,6 @@ void er_semctx_init(er_semctx_t *ctx, er_buildctx_t *bctx,
 }
 
 void er_transfer(er_irnode_t *node, er_semstate_t *state, er_semctx_t *ctx) {
-    ER_UNUSED(node), ER_UNUSED(state), ER_UNUSED(ctx);
-
     switch (node->tag) {
         case ER_IR_PUSHINT: {
             er_push(state, ctx->Int);

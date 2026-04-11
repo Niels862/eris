@@ -144,10 +144,11 @@ static void er_call_entry(er_vm_t *vm, er_mod_t *mod) {
     er_call(vm, entry);
 }
 
-#define ER_OPCODE_HANDLER(n) static inline void er_##n(er_vm_t *vm)
+#define ER_OPCODE_HANDLER(n) \
+    static inline void er_##n(er_vm_t *vm)
 
 #define ER_UNIMPLEMENTED_OPCODE_HANDLER(n) \
-        ER_OPCODE_HANDLER(n) { ER_UNUSED(vm); ER_UNIMPLEMENTED_FUNCTION(); }
+    ER_OPCODE_HANDLER(n) { ER_UNUSED(vm); ER_UNIMPLEMENTED_FUNCTION(); }
 
 ER_UNIMPLEMENTED_OPCODE_HANDLER(NONE)
 
@@ -212,8 +213,13 @@ ER_UNIMPLEMENTED_OPCODE_HANDLER(NOT_EQUALS)
 
 static inline void er_dispatch(er_vm_t *vm, er_opcode_t opc) {
     switch (opc) {
-        #define X(n, f) case ER_OPC_##n: er_##n(vm); break;
+        #define X(n, f) \
+            case ER_OPC_##n: \
+                er_##n(vm); \
+                break;
+
         ER_OPCODES(X);
+
         #undef X
         
         default:
