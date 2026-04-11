@@ -64,10 +64,8 @@ struct er_buildctx_t {
     struct {
         er_sym_t *Int;
         er_sym_t *Bool;
-    } sym;
-
-    er_type_t *Int;
-    er_type_t *Bool;
+        er_sym_t *Error;
+    } syms;
 };
 
 void er_buildfunc_init(er_buildfunc_t *bfunc, er_astnode_t *funcnode, 

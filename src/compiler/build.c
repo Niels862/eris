@@ -121,11 +121,12 @@ static void er_buildmod_delete(er_buildmod_t *bmod) {
 }
 
 static void er_buildctx_init(er_buildctx_t *bctx) {
-    memset(bctx, 0, sizeof(er_buildctx_t));
-
     bctx->arenas.persistent = er_arena_new(256);
+
     er_typefactory_init(&bctx->tf);
     er_symtab_init(&bctx->builtins);
+
+    memset(&bctx->syms, 0, sizeof(bctx->syms));
 }
 
 static void er_buildctx_destruct(er_buildctx_t *bctx) {

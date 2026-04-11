@@ -34,8 +34,7 @@ static er_sym_t *er_make_function(er_arena_t *arena,
     return ER_SYM_ALLOC(arena, ER_SYM_FUNC, name, pos, Func);
 }
 
-static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name, 
-                                             er_type_t **type) {
+static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name) {
     er_arena_t *arena = bctx->arenas.persistent;
     
     er_str_t str;
@@ -45,15 +44,15 @@ static er_sym_t *er_insert_builtin_classtype(er_buildctx_t *bctx, char *name,
     er_sym_t *prev = er_symtab_insert(&bctx->builtins, sym);
     assert(prev == NULL);
 
-    *type = er_make_classtype(&bctx->tf, sym);
-    sym->data.Class.type = *type;
+    sym->data.Class.type = er_make_classtype(&bctx->tf, sym);
 
     return sym;
 }
 
 void er_load_builtins(er_buildctx_t *bctx) {
-    bctx->sym.Int = er_insert_builtin_classtype(bctx, "int", &bctx->Int);
-    bctx->sym.Bool = er_insert_builtin_classtype(bctx, "bool", &bctx->Bool);
+    bctx->syms.Int = er_insert_builtin_classtype(bctx, "int");
+    bctx->syms.Bool = er_insert_builtin_classtype(bctx, "bool");
+    bctx->syms.Error = er_insert_builtin_classtype(bctx, "<error>");
 }
 
 typedef struct {
