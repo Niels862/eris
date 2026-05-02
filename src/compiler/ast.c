@@ -104,6 +104,14 @@ static void er_print_node(char const *attr,
             break;
         }
 
+        case ER_AST_VAR: {
+            er_astvar_t *Var = &data->Var;
+            er_print_str("name", &Var->name, ndepth);
+            er_print_node("anno", Var->anno, ndepth);
+            er_print_node("value", Var->value, ndepth);
+            break;
+        }
+
         case ER_AST_RET: {
             er_astret_t *Ret = &data->Ret;
             er_print_node("value", Ret->val, ndepth);

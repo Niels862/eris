@@ -4,10 +4,8 @@
 #include <stdlib.h>
 
 static void er_push(er_semstate_t *state, er_type_t *type) {
-    er_semval_t val = {
-        .type = type
-    };
-    ER_LIST_ADD(state, val);
+    er_semval_t *val = ER_LIST_EMPLACE(state);
+    val->type = type;
 }
 
 static er_type_t *er_pop(er_semstate_t *state) {

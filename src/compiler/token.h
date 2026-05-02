@@ -19,6 +19,7 @@
         X(MINUS, "-") \
         X(SLASH, "/") \
         X(ASTERISK, "*") \
+        X(EQ, "=") \
 
 #define ER_OTHER_TOKENS(X) \
         X(IDENTIFIER, "") \

@@ -120,6 +120,19 @@ static er_tok_t *er_expect(er_parsectx_t *p, er_tokkind_t kind) {
     return NULL;
 }
 
+static er_tok_t *er_peek(er_parsectx_t *p, size_t n) {
+    er_tok_t *tok = p->curr;
+
+    for (size_t i = 0; i < n; i++) {
+        if (tok->kind == ER_TOK_ENDOFINPUT) {
+            return tok;
+        }
+        tok++;
+    }
+
+    return tok;
+}
+
 static er_astnode_t *er_parse_stmt(er_parsectx_t *p);
 
 static bool er_parse_compound(er_parsectx_t *p, er_nodelist_t *nl) {
@@ -301,8 +314,28 @@ static er_astnode_t *er_parse_integer(er_parsectx_t *p) {
     return n;
 }
 
+static er_astnode_t *er_parse_name(er_parsectx_t *p) {
+    er_tok_t *name = er_expect(p, ER_TOK_IDENTIFIER);
+    if (name == NULL) {
+        return NULL;
+    }
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_IDENT, name->pos, Ident);
+    n->data.Ident.name = name->text;
+
+    return n;
+}
+
 static er_astnode_t *er_parse_value(er_parsectx_t *p) {
-    return er_parse_integer(p);
+    if (p->curr->kind == ER_TOK_INTEGER) {
+        return er_parse_integer(p);
+    }
+
+    if (p->curr->kind == ER_TOK_IDENTIFIER) {
+        return er_parse_name(p);
+    }
+
+    return NULL;
 }
 
 typedef struct {
@@ -401,6 +434,69 @@ static er_astnode_t *er_parse_return_stmt(er_parsectx_t *p) {
     return n;
 }
 
+static er_astnode_t *er_parse_func(er_parsectx_t *p, 
+                                   er_astnode_t *ret_anno, 
+                                   er_tok_t *name) {    
+    er_expect(p, ER_TOK_LPAREN);
+    er_expect(p, ER_TOK_RPAREN);
+
+    er_nodelist_t stmts;
+    if (!er_parse_compound(p, &stmts)) {
+        return NULL;
+    }
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, name->pos, Func);
+    n->data.Func.name = name->text;
+    n->data.Func.ret_anno = ret_anno;
+    er_nodelist_move(p, &stmts, 
+                     &n->data.Func.stmts, 
+                     &n->data.Func.n_stmts);
+
+    return n;
+}
+
+static er_astnode_t *er_parse_var(er_parsectx_t *p, 
+                                  er_astnode_t *anno, 
+                                  er_tok_t *name) {
+    er_astnode_t *value = NULL;
+
+    if (er_accept(p, ER_TOK_EQ) != NULL) {
+        value = er_parse_expr(p);
+        if (value == NULL) {
+            return NULL;
+        }
+    }
+
+    if (er_expect(p, ER_TOK_SEMICOLON) == NULL) {
+        return NULL;
+    }
+
+    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_VAR, name->pos, Var);
+    n->data.Var.name = name->text;
+    n->data.Var.anno = anno;
+    n->data.Var.value = value;
+
+    return n;
+}
+
+static er_astnode_t *er_parse_decl(er_parsectx_t *p) {
+    er_astnode_t *anno = er_parse_annotation(p);
+    if (anno == NULL) {
+        return NULL;
+    }
+
+    er_tok_t *name = er_expect(p, ER_TOK_IDENTIFIER);
+    if (name == NULL) {
+        return NULL;
+    }
+
+    if (p->curr->kind == ER_TOK_LPAREN) {
+        return er_parse_func(p, anno, name);
+    } else {
+        return er_parse_var(p, anno, name);
+    }
+}
+
 static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
     er_astnode_t *n = NULL;
     
@@ -408,6 +504,15 @@ static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
         case ER_TOK_RETURN:
             n = er_parse_return_stmt(p);
             break;
+
+        case ER_TOK_IDENTIFIER: {
+            if (er_is_typename(p, p->curr, false)) {
+                n = er_parse_decl(p);
+            } else {
+                n = er_parse_expr(p);
+            }
+            break;
+        }
 
         default:
             er_err(p->bmod, p->curr->pos, 
@@ -424,38 +529,6 @@ static er_astnode_t *er_parse_stmt(er_parsectx_t *p) {
     return n;
 }
 
-static er_astnode_t *er_parse_func(er_parsectx_t *p) {
-    er_astnode_t *ret_anno = er_parse_annotation(p);
-    if (ret_anno == NULL) {
-        return NULL;
-    }
-
-    er_tok_t *nametok = er_expect(p, ER_TOK_IDENTIFIER);
-    if (nametok == NULL) {
-        return NULL;
-    }
-
-    er_textpos_t pos = nametok->pos;
-    er_str_t *name = &nametok->text;
-    
-    er_expect(p, ER_TOK_LPAREN);
-    er_expect(p, ER_TOK_RPAREN);
-
-    er_nodelist_t stmts;
-    if (!er_parse_compound(p, &stmts)) {
-        return NULL;
-    }
-
-    er_astnode_t *n = ER_AST_ALLOC(p, ER_AST_FUNC, pos, Func);
-    n->data.Func.name = *name;
-    n->data.Func.ret_anno = ret_anno;
-    er_nodelist_move(p, &stmts, 
-                     &n->data.Func.stmts, 
-                     &n->data.Func.n_stmts);
-
-    return n;
-}
-
 static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
     er_textpos_t pos = p->curr->pos;
 
@@ -463,12 +536,13 @@ static er_astnode_t *er_parse_mod(er_parsectx_t *p) {
     er_nodelist_init(p, &funcs);
     
     while (p->curr->kind != ER_TOK_ENDOFINPUT) {
-        er_astnode_t *fn = er_parse_func(p);
-        if (fn != NULL) {
-            er_nodelist_add(p, &funcs, fn);
-        } else {
-            p->error = true;
-            er_consume(p);
+        er_astnode_t *n = er_parse_stmt(p);
+        if (n != NULL) {
+            if (n->kind == ER_AST_FUNC) {
+                er_nodelist_add(p, &funcs, n);
+            } else {
+                ER_NOT_IMPLEMENTED();
+            }
         }
     }
 

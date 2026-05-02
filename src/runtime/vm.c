@@ -148,7 +148,7 @@ static void er_call_entry(er_vm_t *vm, er_mod_t *mod) {
     static inline void er_##n(er_vm_t *vm)
 
 #define ER_UNIMPLEMENTED_OPCODE_HANDLER(n) \
-    ER_OPCODE_HANDLER(n) { ER_UNUSED(vm); ER_UNIMPLEMENTED_FUNCTION(); }
+    ER_OPCODE_HANDLER(n) { ER_UNUSED(vm); ER_NOT_IMPLEMENTED_FUNCTION(); }
 
 ER_UNIMPLEMENTED_OPCODE_HANDLER(NONE)
 

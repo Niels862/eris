@@ -25,7 +25,10 @@ static inline void eprintf(char const *format, ...) {
 #define ER_UNHANDLED_SWITCH_VALUE(format, value) \
         ER_FATAL("unhandled switch value: " format, value)
 
-#define ER_UNIMPLEMENTED_FUNCTION() \
+#define ER_NOT_IMPLEMENTED() \
+        ER_FATAL("not implemented");
+
+#define ER_NOT_IMPLEMENTED_FUNCTION() \
         ER_FATAL("%s is not implemented", __func__)
 
 __attribute__((noreturn))

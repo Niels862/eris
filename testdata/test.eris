@@ -1,3 +1,4 @@
-bool main() {
-    return 21 + 21;
+int main() {
+    int x = 42;
+    return x;
 }

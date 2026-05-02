@@ -58,7 +58,7 @@ static er_type_t *er_peek(er_semstate_t *state, size_t at) {
 #define ER_UNIMPLEMENTED_CHECK_HANDLER(n) \
     ER_CHECK_HANDLER(n) { \
         ER_UNUSED(node), ER_UNUSED(state), ER_UNUSED(ctx); \
-        ER_UNIMPLEMENTED_FUNCTION(); \
+        ER_NOT_IMPLEMENTED_FUNCTION(); \
         return true; \
     }
 
@@ -77,6 +77,7 @@ ER_CHECK_HANDLER(BINOP) {
 
     if (O == ctx->Error) {
         ER_FATAL("ERR");
+        return false;
     }
 
     return true;

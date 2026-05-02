@@ -9,6 +9,7 @@
     X(NONE) \
     X(MOD) \
     X(FUNC) \
+    X(VAR) \
     X(RET) \
     X(BINOP) \
     X(INT) \
@@ -47,6 +48,12 @@ typedef struct {
 } er_astfunc_t;
 
 typedef struct {
+    er_str_t name;
+    er_astnode_t *anno;
+    er_astnode_t *value;
+} er_astvar_t;
+
+typedef struct {
     er_astnode_t *val;
 } er_astret_t;
 
@@ -67,6 +74,7 @@ typedef struct {
 typedef union {
     er_astmod_t Mod;
     er_astfunc_t Func;
+    er_astvar_t Var;
     er_astret_t Ret;
     er_astint_t Int;
     er_astbinop_t BinOp;
